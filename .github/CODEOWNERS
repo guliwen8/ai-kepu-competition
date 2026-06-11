@@ -1,0 +1,9 @@
+# 说明：
+# - 把下面占位符团队账号替换成你们仓库里的真实 GitHub 用户/团队
+# - 配合分支保护中的 "Require review from Code Owners" 才能生效
+
+/apps/api/ @aikepu/backend
+/apps/admin-web/ @aikepu/admin-web
+/apps/miniapp/ @aikepu/miniapp
+/packages/shared/ @aikepu/platform
+

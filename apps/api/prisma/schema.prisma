@@ -1,0 +1,306 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SubmissionCategory {
+  DRAMA
+  VIDEO
+  SCIFI_PAINT
+  CREATIVE_APP
+}
+
+enum SubmissionStatus {
+  DRAFT
+  SUBMITTED
+  NEED_FIX
+  UNDER_REVIEW
+  REJECTED
+  APPROVED
+  IN_JUDGING
+  PUBLICIZED
+  ARCHIVED
+}
+
+enum AttachmentKind {
+  VIDEO
+  IMAGE
+  SCRIPT
+  STATEMENT
+  ZIP
+  DOC
+  OTHER
+}
+
+enum ReviewTaskType {
+  FORMAT
+  ANONYMITY
+  CONTENT
+}
+
+enum ReviewTaskStatus {
+  PENDING
+  RUNNING
+  PASS
+  FAIL
+  NEED_MANUAL
+}
+
+enum JudgingAssignmentStatus {
+  ASSIGNED
+  SUBMITTED
+  REVOKED
+}
+
+model User {
+  id           String         @id @default(cuid())
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  phone        String?        @unique
+  email        String?        @unique
+  username     String?        @unique
+  passwordHash String?
+  status       String         @default("active")
+  userRoles    UserRole[]
+  refreshTokens RefreshToken[]
+  judgeProfile JudgeProfile?
+  ownedTeams   Team[]         @relation("TeamOwner")
+  teamMembers  TeamMember[]
+  submissions  Submission[]   @relation("SubmissionOwner")
+  submissionMembers SubmissionMember[]
+  attachments  Attachment[]   @relation("AttachmentUploader")
+  judgingAssignments JudgingAssignment[] @relation("JudgingAssignmentJudge")
+  auditLogs    AuditLog[]     @relation("AuditActor")
+}
+
+model Role {
+  id        String     @id @default(cuid())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  code      String     @unique
+  name      String
+  userRoles UserRole[]
+}
+
+model UserRole {
+  userId String
+  roleId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+  revokedAt DateTime?
+  tokenHash String
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model JudgeProfile {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  realName  String
+  orgName   String?
+  title     String?
+  contact   String?
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Competition {
+  id              String   @id @default(cuid())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  isCurrent       Boolean  @default(false)
+  title           String
+  theme           String?
+  submissionStart DateTime?
+  submissionEnd   DateTime?
+  judgingStart    DateTime?
+  judgingEnd      DateTime?
+  publicStart     DateTime?
+  publicEnd       DateTime?
+  config          Json?
+  submissions     Submission[]
+
+  @@index([isCurrent])
+}
+
+model Team {
+  id          String       @id @default(cuid())
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  name        String
+  ownerId     String
+  owner       User         @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members     TeamMember[]
+  submissions Submission[]
+
+  @@index([ownerId])
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  teamId    String
+  userId    String
+  role      String   @default("member")
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([userId])
+}
+
+model Submission {
+  id               String            @id @default(cuid())
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  competitionId    String?
+  competition      Competition?      @relation(fields: [competitionId], references: [id], onDelete: SetNull)
+  category         SubmissionCategory
+  status           SubmissionStatus  @default(DRAFT)
+  blindCode        String?
+  title            String
+  intro            String?
+  aiToolsUsage     String?
+  teacherName      String?
+  teacherContact   String?
+  ownerId          String
+  owner            User              @relation("SubmissionOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  teamId           String?
+  team             Team?             @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  submittedAt      DateTime?
+  attachments      Attachment[]
+  members          SubmissionMember[]
+  reviewCases      ReviewCase[]
+  judgingAssignments JudgingAssignment[]
+
+  @@index([ownerId])
+  @@index([competitionId])
+}
+
+model SubmissionMember {
+  submissionId String
+  userId       String
+  role         String   @default("member")
+  createdAt    DateTime @default(now())
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([submissionId, userId])
+  @@index([userId])
+}
+
+model Attachment {
+  id            String         @id @default(cuid())
+  createdAt     DateTime       @default(now())
+  kind          AttachmentKind
+  originalName  String
+  storedPath    String
+  mimeType      String?
+  byteSize      Int
+  meta          Json?
+  submissionId  String
+  submission    Submission     @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  uploaderId    String
+  uploader      User           @relation("AttachmentUploader", fields: [uploaderId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+  @@index([uploaderId])
+}
+
+model ReviewCase {
+  id           String      @id @default(cuid())
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  submissionId String
+  submission   Submission  @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  summary      String      @default("PENDING")
+  tasks        ReviewTask[]
+
+  @@index([submissionId])
+}
+
+model ReviewTask {
+  id          String          @id @default(cuid())
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  caseId      String
+  reviewCase  ReviewCase      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  type        ReviewTaskType
+  status      ReviewTaskStatus @default(PENDING)
+  findings    Json?
+
+  @@index([caseId])
+}
+
+model JudgingAssignment {
+  id           String                 @id @default(cuid())
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+  submissionId String
+  judgeId      String
+  status       JudgingAssignmentStatus @default(ASSIGNED)
+  submittedAt  DateTime?
+  lockedAt     DateTime?
+
+  submission   Submission             @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  judge        User                   @relation("JudgingAssignmentJudge", fields: [judgeId], references: [id], onDelete: Cascade)
+  score        JudgingScore?
+
+  @@unique([submissionId, judgeId])
+  @@index([judgeId, status])
+  @@index([submissionId, status])
+}
+
+model JudgingScore {
+  id           String           @id @default(cuid())
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  assignmentId String           @unique
+  assignment   JudgingAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  s1           Int
+  s2           Int
+  s3           Int
+  s4           Int
+  s5           Int
+  total        Int
+  comment      String?
+  extra        Json?
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  actorUserId String?
+  actorUser   User?    @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  actorRoles  String?
+  action      String
+  resourceType String
+  resourceId  String?
+  success     Boolean  @default(true)
+  requestId   String?
+  ip          String?
+  userAgent   String?
+  before      Json?
+  after       Json?
+
+  @@index([createdAt])
+  @@index([actorUserId, createdAt])
+  @@index([resourceType, resourceId])
+  @@index([action, createdAt])
+}

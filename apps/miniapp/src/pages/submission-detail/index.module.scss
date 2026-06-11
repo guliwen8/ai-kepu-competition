@@ -1,0 +1,177 @@
+@use '../../styles/variables.scss' as *;
+
+.container {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding: $spacing-lg $page-padding $spacing-xl;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $spacing-md;
+}
+
+.title {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  line-height: $line-height-normal;
+}
+
+.sub {
+  margin-top: $spacing-xs;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+}
+
+.card {
+  margin-top: $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  padding: $spacing-lg;
+}
+
+.sectionTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.row {
+  margin-top: $spacing-sm;
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+}
+
+.label {
+  width: 140rpx;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  flex-shrink: 0;
+}
+
+.value {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  line-height: $line-height-normal;
+  flex: 1;
+}
+
+.tagRow {
+  margin-top: $spacing-md;
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.tag {
+  padding: 6rpx 16rpx;
+  border-radius: 999rpx;
+  font-size: $font-size-xs;
+  line-height: 1;
+  border: 1rpx solid $color-border;
+  color: $color-text-secondary;
+  background: $color-bg-page;
+}
+
+.tagOk {
+  color: #0f766e;
+  border-color: rgba(15, 118, 110, 0.28);
+  background: rgba(15, 118, 110, 0.08);
+}
+
+.tagBad {
+  color: #b91c1c;
+  border-color: rgba(185, 28, 28, 0.28);
+  background: rgba(185, 28, 28, 0.08);
+}
+
+.tagWarn {
+  color: #b45309;
+  border-color: rgba(180, 83, 9, 0.28);
+  background: rgba(180, 83, 9, 0.08);
+}
+
+.taskCard {
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-border;
+}
+
+.taskTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-md;
+}
+
+.taskTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.findingList {
+  margin-top: $spacing-sm;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.finding {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  line-height: $line-height-normal;
+}
+
+.actions {
+  margin-top: $spacing-lg;
+  display: flex;
+  gap: $spacing-md;
+}
+
+.primaryBtn {
+  @include button-reset;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  flex: 1;
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.secondaryBtn {
+  @include button-reset;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  background: $color-bg-card;
+  border: 1rpx solid $color-border;
+  color: $color-text-primary;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  flex: 1;
+  &:active {
+    background: $color-bg-hover;
+  }
+}
+
+.error {
+  font-size: $font-size-sm;
+  color: $color-error;
+}
+
+.muted {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}

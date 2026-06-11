@@ -1,0 +1,92 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f0f5ff 0%, $color-bg-page 100%);
+  padding: $spacing-lg $page-padding $spacing-xl;
+  box-sizing: border-box;
+}
+
+.hero {
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-card;
+  padding: $spacing-xl;
+  border: 1rpx solid rgba(22, 93, 255, 0.14);
+}
+
+.title {
+  font-size: 40rpx;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  line-height: $line-height-tight;
+}
+
+.subtitle {
+  margin-top: $spacing-sm;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+}
+
+.primaryBtn {
+  margin-top: $spacing-xl;
+  @include button-reset;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.card {
+  margin-top: $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  padding: $spacing-lg;
+}
+
+.cardTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.cardDesc {
+  margin-top: $spacing-sm;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+}
+
+.kv {
+  margin-top: $spacing-lg;
+  display: flex;
+  gap: $spacing-md;
+}
+
+.kvItem {
+  flex: 1;
+  background: $color-bg-page;
+  border: 1rpx solid $color-border;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+}
+
+.kvLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.kvValue {
+  margin-top: $spacing-xs;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}

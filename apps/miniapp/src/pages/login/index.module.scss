@@ -1,0 +1,78 @@
+@use '../../styles/variables.scss' as *;
+
+.container {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f0f5ff 0%, $color-bg-page 100%);
+  padding: $spacing-xl $page-padding;
+  box-sizing: border-box;
+}
+
+.card {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  padding: $spacing-xl;
+}
+
+.title {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.tip {
+  margin-top: $spacing-sm;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.form {
+  margin-top: $spacing-xl;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.label {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.input {
+  width: 100%;
+  max-width: $max-content-width;
+  background: $color-bg-page;
+  border: 1rpx solid $color-border;
+  border-radius: $radius-md;
+  padding: 20rpx $spacing-lg;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  box-sizing: border-box;
+}
+
+.error {
+  font-size: $font-size-sm;
+  color: $color-error;
+}
+
+.submit {
+  @include button-reset;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  transition: all $transition-base;
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+

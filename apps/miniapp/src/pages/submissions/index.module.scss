@@ -1,0 +1,135 @@
+@use '../../styles/variables.scss' as *;
+
+.container {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding: $spacing-lg $page-padding $spacing-xl;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-md;
+}
+
+.title {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.hint {
+  margin-top: $spacing-xs;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.card {
+  margin-top: $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  padding: $spacing-lg;
+}
+
+.item {
+  padding: $spacing-md 0;
+  border-bottom: 1rpx solid $color-border;
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.itemTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  line-height: $line-height-normal;
+}
+
+.metaRow {
+  margin-top: $spacing-sm;
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.tag {
+  padding: 6rpx 16rpx;
+  border-radius: 999rpx;
+  font-size: $font-size-xs;
+  line-height: 1;
+  border: 1rpx solid $color-border;
+  color: $color-text-secondary;
+  background: $color-bg-page;
+}
+
+.tagOk {
+  color: #0f766e;
+  border-color: rgba(15, 118, 110, 0.28);
+  background: rgba(15, 118, 110, 0.08);
+}
+
+.tagBad {
+  color: #b91c1c;
+  border-color: rgba(185, 28, 28, 0.28);
+  background: rgba(185, 28, 28, 0.08);
+}
+
+.tagWarn {
+  color: #b45309;
+  border-color: rgba(180, 83, 9, 0.28);
+  background: rgba(180, 83, 9, 0.08);
+}
+
+.actions {
+  margin-top: $spacing-md;
+  display: flex;
+  gap: $spacing-md;
+}
+
+.primaryBtn {
+  @include button-reset;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  flex: 1;
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.secondaryBtn {
+  @include button-reset;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  background: $color-bg-card;
+  border: 1rpx solid $color-border;
+  color: $color-text-primary;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  flex: 1;
+  &:active {
+    background: $color-bg-hover;
+  }
+}
+
+.error {
+  font-size: $font-size-sm;
+  color: $color-error;
+}
+
+.empty {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  text-align: center;
+  padding: $spacing-xl 0;
+}
+

@@ -1,0 +1,46 @@
+{
+  "name": "ai-kepu-competition",
+  "private": true,
+  "version": "0.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down",
+    "dev": "npm run -ws --if-present dev",
+    "build": "npm run -ws --if-present build",
+    "lint": "npm run -ws --if-present lint",
+    "typecheck": "npm run -ws --if-present typecheck",
+    "format": "prettier -w .",
+    "format:check": "prettier -c .",
+    "smoke": "npm run -w api smoke",
+    "llm:ping": "npm run -w api llm:ping",
+    "admin:smoke": "npm run -w api admin:smoke",
+    "miniapp:dev:weapp": "npm run -w taro_template dev:weapp",
+    "miniapp:build:weapp": "npm run -w taro_template build:weapp",
+    "miniapp:dev:h5": "npm run -w taro_template dev:h5",
+    "miniapp:build:h5": "npm run -w taro_template build:h5",
+    "monitoring:up": "docker compose -f docker-compose.monitoring.yml up -d",
+    "monitoring:down": "docker compose -f docker-compose.monitoring.yml down",
+    "monitoring:webhook": "node scripts/monitoring/alertmanager-webhook.js",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.6",
+    "prettier": "^3.8.3",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "typescript": "^6.0.3",
+    "webpack": "5.91.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,yml,yaml,css,scss,md}": [
+      "prettier -w"
+    ]
+  }
+}

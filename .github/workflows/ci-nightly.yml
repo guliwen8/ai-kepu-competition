@@ -1,0 +1,123 @@
+name: ci/nightly
+
+on:
+  schedule:
+    - cron: "0 2 * * *" # Asia/Shanghai 10:00（GitHub cron is UTC）
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: aikepu
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping || exit 1"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/aikepu?schema=public
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: ci-secret
+      JWT_EXPIRES_IN: 7d
+      ADMIN_BOOTSTRAP_TOKEN: ci-bootstrap
+      API_PORT: 3001
+      LLM_PROVIDER: none
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - run: npm ci
+      - run: npm run format:check
+
+      - name: Build all
+        run: npm run build
+
+      - name: Prisma generate + migrate deploy
+        run: |
+          npm -w api run prisma:generate
+          npm -w api exec -- prisma migrate deploy
+
+      - name: API unit + e2e
+        run: |
+          npm -w api run test
+          npm -w api run test:e2e
+
+      - name: Start api (background)
+        run: |
+          npm -w api run build
+          (cd apps/api && nohup node dist/main.js > /tmp/api.log 2>&1 &)
+
+      - name: Wait api
+        run: bash scripts/ci/wait-for-url.sh http://localhost:3001/ 60 2
+
+      - name: Healthz
+        run: curl -fsS http://localhost:3001/healthz
+
+      - name: Metrics
+        run: curl -fsS http://localhost:3001/metrics | head -n 20
+
+      - name: Smoke (user)
+        run: API_BASE_URL=http://localhost:3001 npm -w api run smoke
+
+      - name: Smoke (admin)
+        run: API_BASE_URL=http://localhost:3001 npm -w api run admin:smoke
+
+      - name: Smoke (judging)
+        run: API_BASE_URL=http://localhost:3001 npm -w api run judging:smoke
+
+      - name: Smoke (ranking)
+        run: API_BASE_URL=http://localhost:3001 npm -w api run ranking:smoke
+
+      - name: Smoke (audit)
+        run: API_BASE_URL=http://localhost:3001 npm -w api run audit:smoke
+
+      - name: Dump api log on failure
+        if: failure()
+        run: |
+          echo "----- /tmp/api.log -----"
+          cat /tmp/api.log || true
+
+  alert:
+    runs-on: ubuntu-latest
+    needs: [regression]
+    if: always() && needs.regression.result == 'failure'
+    timeout-minutes: 5
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const title = `ci/nightly 失败: ${context.sha.slice(0,7)}`;
+            const body = `- commit: ${context.sha}\n- run: ${runUrl}\n`;
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body
+            });
