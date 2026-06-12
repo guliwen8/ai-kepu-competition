@@ -71,7 +71,7 @@ jobs:
       - name: Start api (background)
         run: |
           npm -w api run build
-          (cd apps/api && nohup node dist/main.js > /tmp/api.log 2>&1 &)
+          (cd apps/api && nohup node dist/src/main.js > /tmp/api.log 2>&1 &)
 
       - name: Wait api
         run: bash scripts/ci/wait-for-url.sh http://localhost:3001/ 60 2
