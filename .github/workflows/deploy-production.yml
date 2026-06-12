@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: production
-    if: secrets.PROD_SSH_HOST != '' && secrets.PROD_SSH_USER != '' && secrets.PROD_SSH_KEY != ''
+    if: vars.PROD_DEPLOY_ENABLED == 'true'
     env:
       TAG: ${{ github.event.release.tag_name || inputs.tag }}
       SSH_HOST: ${{ secrets.PROD_SSH_HOST }}
@@ -63,11 +63,21 @@ jobs:
           ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "set -euo pipefail; cd \"$DEPLOY_PATH/$TAG\"; tar -xzf \"deploy-$TAG.tgz\"; DEPLOY_PATH=\"$DEPLOY_PATH\" TAG=\"$TAG\" API_BASE_URL=\"$API_BASE_URL\" bash \"deploy/apply.sh\""
 
       - name: Remote deploy (custom override)
-        if: secrets.PROD_DEPLOY_COMMAND != ''
         run: |
-          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "${{ secrets.PROD_DEPLOY_COMMAND }}"
+          set -euo pipefail
+          DEPLOY_COMMAND="${{ secrets.PROD_DEPLOY_COMMAND }}"
+          if [ -z "$DEPLOY_COMMAND" ]; then
+            echo "PROD_DEPLOY_COMMAND not set, skipping"
+            exit 0
+          fi
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "$DEPLOY_COMMAND"
 
       - name: Post-deploy health check (optional)
-        if: secrets.PROD_API_BASE_URL != ''
         run: |
-          curl -fsS "${{ secrets.PROD_API_BASE_URL }}/healthz"
+          set -euo pipefail
+          API_BASE_URL="${{ secrets.PROD_API_BASE_URL }}"
+          if [ -z "$API_BASE_URL" ]; then
+            echo "PROD_API_BASE_URL not set, skipping"
+            exit 0
+          fi
+          curl -fsS "$API_BASE_URL/healthz"

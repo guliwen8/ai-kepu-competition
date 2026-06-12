@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: staging
-    if: inputs.environment == 'staging' && secrets.STAGING_SSH_HOST != '' && secrets.STAGING_SSH_USER != '' && secrets.STAGING_SSH_KEY != ''
+    if: inputs.environment == 'staging' && vars.STAGING_DEPLOY_ENABLED == 'true'
     env:
       TAG: ${{ inputs.tag }}
       SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
@@ -67,20 +67,30 @@ jobs:
           ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "set -euo pipefail; cd \"$DEPLOY_PATH/$TAG\"; tar -xzf \"deploy-$TAG.tgz\"; DEPLOY_PATH=\"$DEPLOY_PATH\" TAG=\"$TAG\" API_BASE_URL=\"$API_BASE_URL\" bash \"deploy/rollback.sh\""
 
       - name: Remote rollback (custom)
-        if: secrets.STAGING_ROLLBACK_COMMAND != ''
         run: |
-          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "${{ secrets.STAGING_ROLLBACK_COMMAND }}"
+          set -euo pipefail
+          ROLLBACK_COMMAND="${{ secrets.STAGING_ROLLBACK_COMMAND }}"
+          if [ -z "$ROLLBACK_COMMAND" ]; then
+            echo "STAGING_ROLLBACK_COMMAND not set, skipping"
+            exit 0
+          fi
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "$ROLLBACK_COMMAND"
 
       - name: Post-rollback health check (optional)
-        if: secrets.STAGING_API_BASE_URL != ''
         run: |
-          curl -fsS "${{ secrets.STAGING_API_BASE_URL }}/healthz"
+          set -euo pipefail
+          API_BASE_URL="${{ secrets.STAGING_API_BASE_URL }}"
+          if [ -z "$API_BASE_URL" ]; then
+            echo "STAGING_API_BASE_URL not set, skipping"
+            exit 0
+          fi
+          curl -fsS "$API_BASE_URL/healthz"
 
   rollback-production:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: production
-    if: inputs.environment == 'production' && secrets.PROD_SSH_HOST != '' && secrets.PROD_SSH_USER != '' && secrets.PROD_SSH_KEY != ''
+    if: inputs.environment == 'production' && vars.PROD_DEPLOY_ENABLED == 'true'
     env:
       TAG: ${{ inputs.tag }}
       SSH_HOST: ${{ secrets.PROD_SSH_HOST }}
@@ -120,11 +130,21 @@ jobs:
           ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "set -euo pipefail; cd \"$DEPLOY_PATH/$TAG\"; tar -xzf \"deploy-$TAG.tgz\"; DEPLOY_PATH=\"$DEPLOY_PATH\" TAG=\"$TAG\" API_BASE_URL=\"$API_BASE_URL\" bash \"deploy/rollback.sh\""
 
       - name: Remote rollback (custom)
-        if: secrets.PROD_ROLLBACK_COMMAND != ''
         run: |
-          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "${{ secrets.PROD_ROLLBACK_COMMAND }}"
+          set -euo pipefail
+          ROLLBACK_COMMAND="${{ secrets.PROD_ROLLBACK_COMMAND }}"
+          if [ -z "$ROLLBACK_COMMAND" ]; then
+            echo "PROD_ROLLBACK_COMMAND not set, skipping"
+            exit 0
+          fi
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "$ROLLBACK_COMMAND"
 
       - name: Post-rollback health check (optional)
-        if: secrets.PROD_API_BASE_URL != ''
         run: |
-          curl -fsS "${{ secrets.PROD_API_BASE_URL }}/healthz"
+          set -euo pipefail
+          API_BASE_URL="${{ secrets.PROD_API_BASE_URL }}"
+          if [ -z "$API_BASE_URL" ]; then
+            echo "PROD_API_BASE_URL not set, skipping"
+            exit 0
+          fi
+          curl -fsS "$API_BASE_URL/healthz"

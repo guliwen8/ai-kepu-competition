@@ -221,7 +221,7 @@ jobs:
     name: deploy staging (optional, gated)
     runs-on: ubuntu-latest
     needs: [build-artifacts]
-    if: needs.build-artifacts.result == 'success' && secrets.STAGING_SSH_HOST != '' && secrets.STAGING_SSH_USER != '' && secrets.STAGING_SSH_KEY != ''
+    if: needs.build-artifacts.result == 'success' && vars.STAGING_DEPLOY_ENABLED == 'true'
     timeout-minutes: 30
     environment: staging
     env:
@@ -259,11 +259,21 @@ jobs:
           ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "set -euo pipefail; cd \"$DEPLOY_PATH/${GITHUB_SHA}\"; tar -xzf \"deploy-${GITHUB_SHA}.tgz\"; DEPLOY_PATH=\"$DEPLOY_PATH\" TAG=\"${GITHUB_SHA}\" API_BASE_URL=\"$API_BASE_URL\" bash \"deploy/apply.sh\""
 
       - name: Remote deploy (custom override)
-        if: secrets.STAGING_DEPLOY_COMMAND != ''
         run: |
-          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "${{ secrets.STAGING_DEPLOY_COMMAND }}"
+          set -euo pipefail
+          DEPLOY_COMMAND="${{ secrets.STAGING_DEPLOY_COMMAND }}"
+          if [ -z "$DEPLOY_COMMAND" ]; then
+            echo "STAGING_DEPLOY_COMMAND not set, skipping"
+            exit 0
+          fi
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "$DEPLOY_COMMAND"
 
       - name: Post-deploy health check (optional)
-        if: secrets.STAGING_API_BASE_URL != ''
         run: |
-          curl -fsS "${{ secrets.STAGING_API_BASE_URL }}/healthz"
+          set -euo pipefail
+          API_BASE_URL="${{ secrets.STAGING_API_BASE_URL }}"
+          if [ -z "$API_BASE_URL" ]; then
+            echo "STAGING_API_BASE_URL not set, skipping"
+            exit 0
+          fi
+          curl -fsS "$API_BASE_URL/healthz"
