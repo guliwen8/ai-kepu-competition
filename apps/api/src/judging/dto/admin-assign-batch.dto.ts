@@ -1,4 +1,11 @@
-import { ArrayNotEmpty, IsArray, IsBoolean, IsIn, IsOptional, IsString } from 'class-validator';
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsBoolean,
+  IsIn,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class AdminAssignBatchDto {
   @IsArray()
@@ -19,4 +26,3 @@ export class AdminAssignBatchDto {
   @IsBoolean()
   ensureBlindCode?: boolean;
 }
-

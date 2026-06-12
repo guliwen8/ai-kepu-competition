@@ -5,4 +5,3 @@ export class CreateTeamDto {
   @Length(2, 32)
   name!: string;
 }
-

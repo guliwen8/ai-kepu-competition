@@ -16,9 +16,16 @@ async function bootstrap() {
   const metrics = app.get(MetricsService);
   app.use((req: any, res: any, next: any) => {
     const raw = req.headers?.['x-request-id'];
-    const incoming = typeof raw === 'string' ? raw.trim() : Array.isArray(raw) ? String(raw[0] ?? '').trim() : '';
+    const incoming =
+      typeof raw === 'string'
+        ? raw.trim()
+        : Array.isArray(raw)
+          ? String(raw[0] ?? '').trim()
+          : '';
     const requestId =
-      incoming && incoming.length <= 128 && /^[a-zA-Z0-9._-]+$/.test(incoming) ? incoming : randomUUID();
+      incoming && incoming.length <= 128 && /^[a-zA-Z0-9._-]+$/.test(incoming)
+        ? incoming
+        : randomUUID();
     res.setHeader('x-request-id', requestId);
     req.requestId = requestId;
     runWithRequestContext({ requestId }, () => next());
@@ -28,7 +35,12 @@ async function bootstrap() {
     res.on('finish', () => {
       const end = process.hrtime.bigint();
       const ms = Number(end - start) / 1e6;
-      metrics.observe({ method: req.method, path: req.originalUrl ?? req.url ?? '', status: res.statusCode, durationMs: ms });
+      metrics.observe({
+        method: req.method,
+        path: req.originalUrl ?? req.url ?? '',
+        status: res.statusCode,
+        durationMs: ms,
+      });
     });
     next();
   });

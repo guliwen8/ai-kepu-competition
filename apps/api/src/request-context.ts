@@ -13,4 +13,3 @@ export function runWithRequestContext(ctx: RequestContext, fn: () => void) {
 export function getRequestContext() {
   return als.getStore();
 }
-

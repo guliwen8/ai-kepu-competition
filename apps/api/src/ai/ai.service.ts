@@ -33,8 +33,13 @@ export class AiService {
 
   async extractContentRisk(args: {
     chunks: Array<{ field: string; text: string }>;
-  }): Promise<{ status: 'PASS' | 'FAIL' | 'NEED_MANUAL'; findings: ContentFinding[] }> {
-    const provider = (this.configService.get<string>('LLM_PROVIDER') ?? 'none').toLowerCase();
+  }): Promise<{
+    status: 'PASS' | 'FAIL' | 'NEED_MANUAL';
+    findings: ContentFinding[];
+  }> {
+    const provider = (
+      this.configService.get<string>('LLM_PROVIDER') ?? 'none'
+    ).toLowerCase();
     if (provider !== 'openai_compatible') {
       return { status: 'PASS', findings: [] };
     }
@@ -44,12 +49,22 @@ export class AiService {
     const model =
       this.configService.get<string>('LLM_MODEL') ??
       (baseUrl.includes('minimaxi.com') ? 'MiniMax-M2.7' : 'gpt-4o-mini');
-    const timeoutMs = Number(this.configService.get<string>('LLM_TIMEOUT_MS') ?? '8000');
-    const apiKeyHeader = this.configService.get<string>('LLM_API_KEY_HEADER') ?? 'Authorization';
-    const apiKeyPrefix = this.configService.get<string>('LLM_API_KEY_PREFIX') ?? 'Bearer';
-    const chatPath = this.configService.get<string>('LLM_CHAT_PATH') ?? '/chat/completions';
+    const timeoutMs = Number(
+      this.configService.get<string>('LLM_TIMEOUT_MS') ?? '8000',
+    );
+    const apiKeyHeader =
+      this.configService.get<string>('LLM_API_KEY_HEADER') ?? 'Authorization';
+    const apiKeyPrefix =
+      this.configService.get<string>('LLM_API_KEY_PREFIX') ?? 'Bearer';
+    const chatPath =
+      this.configService.get<string>('LLM_CHAT_PATH') ?? '/chat/completions';
 
-    if (!baseUrl || !apiKey || apiKey === 'changeme' || baseUrl.includes('api.example.com')) {
+    if (
+      !baseUrl ||
+      !apiKey ||
+      apiKey === 'changeme' ||
+      baseUrl.includes('api.example.com')
+    ) {
       return { status: 'PASS', findings: [] };
     }
 
@@ -102,20 +117,25 @@ export class AiService {
     const parsed = this.safeParseJson<LlmContentResponse>(content);
     if (!parsed) return { status: 'PASS', findings: [] };
 
-    const findings: ContentFinding[] = (parsed.findings ?? []).slice(0, 20).map((f) => ({
-      code: `LLM_${String(f.code ?? 'RISK')}`.slice(0, 40),
-      message: String(f.message ?? '疑似存在内容风险'),
-      detail: {
-        field: f.field,
-        evidence: f.evidence ? String(f.evidence).slice(0, 160) : undefined,
-        confidence: typeof f.confidence === 'number' ? f.confidence : undefined,
-        suggestion: f.suggestion,
-        riskLevel: parsed.riskLevel,
-      },
-    }));
+    const findings: ContentFinding[] = (parsed.findings ?? [])
+      .slice(0, 20)
+      .map((f) => ({
+        code: `LLM_${String(f.code ?? 'RISK')}`.slice(0, 40),
+        message: String(f.message ?? '疑似存在内容风险'),
+        detail: {
+          field: f.field,
+          evidence: f.evidence ? String(f.evidence).slice(0, 160) : undefined,
+          confidence:
+            typeof f.confidence === 'number' ? f.confidence : undefined,
+          suggestion: f.suggestion,
+          riskLevel: parsed.riskLevel,
+        },
+      }));
 
     const status =
-      parsed.status === 'FAIL' || parsed.status === 'NEED_MANUAL' || parsed.status === 'PASS'
+      parsed.status === 'FAIL' ||
+      parsed.status === 'NEED_MANUAL' ||
+      parsed.status === 'PASS'
         ? parsed.status
         : 'PASS';
 
@@ -124,8 +144,13 @@ export class AiService {
 
   async extractAnonymityRisk(args: {
     chunks: Array<{ field: string; text: string }>;
-  }): Promise<{ status: 'PASS' | 'FAIL' | 'NEED_MANUAL'; findings: AnonymityFinding[] }> {
-    const provider = (this.configService.get<string>('LLM_PROVIDER') ?? 'none').toLowerCase();
+  }): Promise<{
+    status: 'PASS' | 'FAIL' | 'NEED_MANUAL';
+    findings: AnonymityFinding[];
+  }> {
+    const provider = (
+      this.configService.get<string>('LLM_PROVIDER') ?? 'none'
+    ).toLowerCase();
     if (provider !== 'openai_compatible') {
       return { status: 'PASS', findings: [] };
     }
@@ -135,12 +160,22 @@ export class AiService {
     const model =
       this.configService.get<string>('LLM_MODEL') ??
       (baseUrl.includes('minimaxi.com') ? 'MiniMax-M2.7' : 'gpt-4o-mini');
-    const timeoutMs = Number(this.configService.get<string>('LLM_TIMEOUT_MS') ?? '8000');
-    const apiKeyHeader = this.configService.get<string>('LLM_API_KEY_HEADER') ?? 'Authorization';
-    const apiKeyPrefix = this.configService.get<string>('LLM_API_KEY_PREFIX') ?? 'Bearer';
-    const chatPath = this.configService.get<string>('LLM_CHAT_PATH') ?? '/chat/completions';
+    const timeoutMs = Number(
+      this.configService.get<string>('LLM_TIMEOUT_MS') ?? '8000',
+    );
+    const apiKeyHeader =
+      this.configService.get<string>('LLM_API_KEY_HEADER') ?? 'Authorization';
+    const apiKeyPrefix =
+      this.configService.get<string>('LLM_API_KEY_PREFIX') ?? 'Bearer';
+    const chatPath =
+      this.configService.get<string>('LLM_CHAT_PATH') ?? '/chat/completions';
 
-    if (!baseUrl || !apiKey || apiKey === 'changeme' || baseUrl.includes('api.example.com')) {
+    if (
+      !baseUrl ||
+      !apiKey ||
+      apiKey === 'changeme' ||
+      baseUrl.includes('api.example.com')
+    ) {
       return { status: 'PASS', findings: [] };
     }
 
@@ -191,18 +226,23 @@ export class AiService {
     const parsed = this.safeParseJson<LlmAnonymityResponse>(content);
     if (!parsed) return { status: 'PASS', findings: [] };
 
-    const findings: AnonymityFinding[] = (parsed.findings ?? []).slice(0, 20).map((f) => ({
-      code: `LLM_${String(f.code ?? 'SUSPECT')}`.slice(0, 40),
-      message: String(f.message ?? '疑似泄露身份信息'),
-      detail: {
-        field: f.field,
-        evidence: f.evidence ? String(f.evidence).slice(0, 120) : undefined,
-        confidence: typeof f.confidence === 'number' ? f.confidence : undefined,
-      },
-    }));
+    const findings: AnonymityFinding[] = (parsed.findings ?? [])
+      .slice(0, 20)
+      .map((f) => ({
+        code: `LLM_${String(f.code ?? 'SUSPECT')}`.slice(0, 40),
+        message: String(f.message ?? '疑似泄露身份信息'),
+        detail: {
+          field: f.field,
+          evidence: f.evidence ? String(f.evidence).slice(0, 120) : undefined,
+          confidence:
+            typeof f.confidence === 'number' ? f.confidence : undefined,
+        },
+      }));
 
     const status =
-      parsed.status === 'FAIL' || parsed.status === 'NEED_MANUAL' || parsed.status === 'PASS'
+      parsed.status === 'FAIL' ||
+      parsed.status === 'NEED_MANUAL' ||
+      parsed.status === 'PASS'
         ? parsed.status
         : 'PASS';
 
@@ -218,7 +258,10 @@ export class AiService {
       try {
         return JSON.parse(raw) as T;
       } catch {
-        const relaxed = raw.replace(/\\\\/g, '\\').replace(/\\"/g, '"').replace(/\\n/g, '\n');
+        const relaxed = raw
+          .replace(/\\\\/g, '\\')
+          .replace(/\\"/g, '"')
+          .replace(/\\n/g, '\n');
         try {
           return JSON.parse(relaxed) as T;
         } catch {
@@ -253,14 +296,18 @@ export class AiService {
     messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;
   }): Promise<string> {
     const baseUrl = args.baseUrl.replace(/\/+$/, '');
-    const chatPath = args.chatPath.startsWith('/') ? args.chatPath : `/${args.chatPath}`;
+    const chatPath = args.chatPath.startsWith('/')
+      ? args.chatPath
+      : `/${args.chatPath}`;
     const url = `${baseUrl}${chatPath}`;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), args.timeoutMs);
     try {
       const headerName = String(args.apiKeyHeader || 'Authorization');
       const prefix = String(args.apiKeyPrefix || 'Bearer').trim();
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
       if (headerName.toLowerCase() === 'authorization') {
         headers[headerName] = prefix ? `${prefix} ${args.apiKey}` : args.apiKey;
       } else {

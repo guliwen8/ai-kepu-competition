@@ -11,4 +11,3 @@ receivers:
   - name: webhook
     webhook_configs:
       - url: http://host.docker.internal:18080/alertmanager
-

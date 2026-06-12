@@ -66,7 +66,13 @@ export function runAnonymityRules(input: AnonymityCheckInput): {
     for (const a of input.attachments) {
       const name = (a.originalName ?? '').trim();
       if (!name) continue;
-      pushMatches('attachment.originalName', name, phoneRe, 'PHONE', '附件名疑似包含手机号信息');
+      pushMatches(
+        'attachment.originalName',
+        name,
+        phoneRe,
+        'PHONE',
+        '附件名疑似包含手机号信息',
+      );
       pushMatches(
         'attachment.originalName',
         name,
@@ -78,7 +84,11 @@ export function runAnonymityRules(input: AnonymityCheckInput): {
         findings.push({
           code: 'ORG_KEYWORD',
           message: '附件名疑似包含单位/学校信息',
-          detail: { field: 'attachment.originalName', evidence: m[0], index: m.index ?? undefined },
+          detail: {
+            field: 'attachment.originalName',
+            evidence: m[0],
+            index: m.index ?? undefined,
+          },
         });
       }
     }
@@ -86,4 +96,3 @@ export function runAnonymityRules(input: AnonymityCheckInput): {
 
   return { pass: findings.length === 0, findings };
 }
-

@@ -3,4 +3,3 @@ export type ContentFinding = {
   message: string;
   detail?: Record<string, unknown>;
 };
-

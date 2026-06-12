@@ -13,4 +13,3 @@ export class StorageService {
     mkdirSync(this.uploadDir, { recursive: true });
   }
 }
-

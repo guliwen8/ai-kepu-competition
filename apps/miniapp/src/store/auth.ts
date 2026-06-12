@@ -46,4 +46,3 @@ export const useAuthStore = create<State>((set, get) => ({
 export function accessToken() {
   return useAuthStore.getState().tokens?.accessToken ?? null;
 }
-

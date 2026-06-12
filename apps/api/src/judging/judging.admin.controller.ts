@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -22,8 +32,16 @@ export class JudgingAdminController {
   ) {}
 
   @Get('judges')
-  listJudges(@Query('page') page = '1', @Query('pageSize') pageSize = '20', @Query('q') q?: string) {
-    return this.judgingService.adminListJudges({ page: Number(page), pageSize: Number(pageSize), q });
+  listJudges(
+    @Query('page') page = '1',
+    @Query('pageSize') pageSize = '20',
+    @Query('q') q?: string,
+  ) {
+    return this.judgingService.adminListJudges({
+      page: Number(page),
+      pageSize: Number(pageSize),
+      q,
+    });
   }
 
   @Post('judges/grant')
@@ -54,7 +72,12 @@ export class JudgingAdminController {
       actorRoles: req.user?.roles,
       action: 'ADMIN_JUDGING_ASSIGN_BATCH',
       resourceType: 'JudgingAssignment',
-      after: { ...r, submissionIds: dto.submissionIds, judgeIds: dto.judgeIds, ensureBlindCode: dto.ensureBlindCode },
+      after: {
+        ...r,
+        submissionIds: dto.submissionIds,
+        judgeIds: dto.judgeIds,
+        ensureBlindCode: dto.ensureBlindCode,
+      },
       ip: req.ip,
       userAgent: req.headers?.['user-agent'],
     });
@@ -78,7 +101,9 @@ export class JudgingAdminController {
 
   @Post('assignments/:id/revoke')
   async revoke(@Req() req: any, @Param('id') id: string) {
-    const r = await this.judgingService.adminRevokeAssignment({ assignmentId: id });
+    const r = await this.judgingService.adminRevokeAssignment({
+      assignmentId: id,
+    });
     await this.auditService.write({
       actorUserId: req.user?.userId,
       actorRoles: req.user?.roles,
@@ -102,13 +127,18 @@ export class JudgingAdminController {
       submittedOnly: submittedOnly === '1' || submittedOnly === 'true',
     });
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="judging_export.csv"`);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="judging_export.csv"`,
+    );
     await this.auditService.write({
       actorUserId: req.user?.userId,
       actorRoles: req.user?.roles,
       action: 'ADMIN_JUDGING_EXPORT',
       resourceType: 'JudgingExport',
-      after: { submittedOnly: submittedOnly === '1' || submittedOnly === 'true' },
+      after: {
+        submittedOnly: submittedOnly === '1' || submittedOnly === 'true',
+      },
       ip: req.ip,
       userAgent: req.headers?.['user-agent'],
     });

@@ -2,7 +2,13 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
-type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue };
+type JsonValue =
+  | null
+  | boolean
+  | number
+  | string
+  | JsonValue[]
+  | { [key: string]: JsonValue };
 
 function loadEnv(): Record<string, string> {
   let dir = process.cwd();
@@ -18,7 +24,10 @@ function loadEnv(): Record<string, string> {
         if (idx <= 0) continue;
         const key = line.slice(0, idx).trim();
         let value = line.slice(idx + 1).trim();
-        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        if (
+          (value.startsWith('"') && value.endsWith('"')) ||
+          (value.startsWith("'") && value.endsWith("'"))
+        ) {
           value = value.slice(1, -1);
         }
         out[key] = value;
@@ -84,7 +93,12 @@ async function requestMultipart<T extends JsonValue>(args: {
   return readJson<T>(res);
 }
 
-async function requestText(args: { baseUrl: string; path: string; method: string; token?: string }) {
+async function requestText(args: {
+  baseUrl: string;
+  path: string;
+  method: string;
+  token?: string;
+}) {
   const res = await fetch(`${args.baseUrl}${args.path}`, {
     method: args.method,
     headers: {
@@ -105,14 +119,20 @@ function isoOffset(ms: number) {
 async function main() {
   const baseUrl = process.env.API_BASE_URL ?? 'http://localhost:3001';
   const env = loadEnv();
-  const bootstrapToken = process.env.ADMIN_BOOTSTRAP_TOKEN ?? env.ADMIN_BOOTSTRAP_TOKEN ?? '';
+  const bootstrapToken =
+    process.env.ADMIN_BOOTSTRAP_TOKEN ?? env.ADMIN_BOOTSTRAP_TOKEN ?? '';
 
   const adminPhone = process.env.SMOKE_PHONE ?? '13957512889';
-  const judgePhone = process.env.JUDGE_PHONE ?? `139${String(Date.now()).slice(-8)}`;
-  const participantPhone = process.env.PARTICIPANT_PHONE ?? `138${String(Date.now()).slice(-8)}`;
+  const judgePhone =
+    process.env.JUDGE_PHONE ?? `139${String(Date.now()).slice(-8)}`;
+  const participantPhone =
+    process.env.PARTICIPANT_PHONE ?? `138${String(Date.now()).slice(-8)}`;
   const code = process.env.SMOKE_CODE ?? '000000';
 
-  const login1 = await requestJson<{ accessToken: string; refreshToken: string }>({
+  const login1 = await requestJson<{
+    accessToken: string;
+    refreshToken: string;
+  }>({
     baseUrl,
     path: '/auth/login/sms',
     method: 'POST',
@@ -129,7 +149,10 @@ async function main() {
     });
   }
 
-  const adminLogin = await requestJson<{ accessToken: string; refreshToken: string }>({
+  const adminLogin = await requestJson<{
+    accessToken: string;
+    refreshToken: string;
+  }>({
     baseUrl,
     path: '/auth/login/sms',
     method: 'POST',
@@ -151,7 +174,10 @@ async function main() {
     body: { phone: judgePhone, realName: '评委A', orgName: '本地测试' },
   });
 
-  const judgeLogin = await requestJson<{ accessToken: string; refreshToken: string }>({
+  const judgeLogin = await requestJson<{
+    accessToken: string;
+    refreshToken: string;
+  }>({
     baseUrl,
     path: '/auth/login/sms',
     method: 'POST',
@@ -165,7 +191,9 @@ async function main() {
     token: adminLogin.accessToken,
   });
   if (!adminMe.roles.includes('admin')) {
-    throw new Error('当前 SMOKE_PHONE 用户不是 admin，请先在后台授予 admin 或提供可用的 ADMIN_BOOTSTRAP_TOKEN');
+    throw new Error(
+      '当前 SMOKE_PHONE 用户不是 admin，请先在后台授予 admin 或提供可用的 ADMIN_BOOTSTRAP_TOKEN',
+    );
   }
 
   const openWindows = {
@@ -181,7 +209,10 @@ async function main() {
     path: '/admin/competitions',
     method: 'POST',
     token: adminLogin.accessToken,
-    body: { title: `judging-smoke-${randomUUID().slice(0, 8)}`, ...openWindows },
+    body: {
+      title: `judging-smoke-${randomUUID().slice(0, 8)}`,
+      ...openWindows,
+    },
   });
   await requestJson<JsonValue>({
     baseUrl,
@@ -197,7 +228,10 @@ async function main() {
     token: judgeLogin.accessToken,
   });
 
-  const participantLogin = await requestJson<{ accessToken: string; refreshToken: string }>({
+  const participantLogin = await requestJson<{
+    accessToken: string;
+    refreshToken: string;
+  }>({
     baseUrl,
     path: '/auth/login/sms',
     method: 'POST',
@@ -209,7 +243,10 @@ async function main() {
     path: '/submissions',
     method: 'POST',
     token: participantLogin.accessToken,
-    body: { category: 'VIDEO', title: `judging-smoke-${randomUUID().slice(0, 8)}` },
+    body: {
+      category: 'VIDEO',
+      title: `judging-smoke-${randomUUID().slice(0, 8)}`,
+    },
   });
 
   const buf = new Uint8Array([0, 1, 2, 3, 4, 5]);
@@ -239,7 +276,12 @@ async function main() {
     path: '/admin/judging/assignments:batch',
     method: 'POST',
     token: adminLogin.accessToken,
-    body: { submissionIds: [submissionId], judgeIds: [me.id], ensureBlindCode: true, mode: 'cross' },
+    body: {
+      submissionIds: [submissionId],
+      judgeIds: [me.id],
+      ensureBlindCode: true,
+      mode: 'cross',
+    },
   });
   if (assign.createdCount === 0) {
     const first = assign.skipped?.[0];
@@ -254,9 +296,12 @@ async function main() {
   });
 
   const firstAttachments = tasks?.[0]?.submission?.attachments ?? [];
-  const blindOk = firstAttachments.every((a: any) => !Object.prototype.hasOwnProperty.call(a, 'originalName'));
+  const blindOk = firstAttachments.every(
+    (a: any) => !Object.prototype.hasOwnProperty.call(a, 'originalName'),
+  );
 
-  const assignmentId = tasks.find((t) => t.submission?.id === submissionId)?.id ?? tasks[0]?.id;
+  const assignmentId =
+    tasks.find((t) => t.submission?.id === submissionId)?.id ?? tasks[0]?.id;
   if (!assignmentId) throw new Error('评委侧未查询到分配任务');
 
   const score = await requestJson<JsonValue>({

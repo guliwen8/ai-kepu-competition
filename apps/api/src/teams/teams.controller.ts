@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AuditService } from '../audit/audit.service';
@@ -33,8 +41,17 @@ export class TeamsController {
   }
 
   @Post(':id/members')
-  async addMember(@Req() req: any, @Param('id') id: string, @Body() dto: AddMemberDto) {
-    const r = await this.teamsService.addMember(req.user.userId, id, dto.phone, dto.role);
+  async addMember(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() dto: AddMemberDto,
+  ) {
+    const r = await this.teamsService.addMember(
+      req.user.userId,
+      id,
+      dto.phone,
+      dto.role,
+    );
     await this.auditService.write({
       actorUserId: req.user?.userId,
       actorRoles: req.user?.roles,

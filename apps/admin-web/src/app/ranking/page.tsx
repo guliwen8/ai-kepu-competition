@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { apiFetch } from "@/lib/api";
-import { labelCategory } from "@/lib/labels";
+import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
+import { apiFetch } from '@/lib/api';
+import { labelCategory } from '@/lib/labels';
 
 type Item = {
   rank: number;
@@ -11,7 +11,15 @@ type Item = {
   blindCode: string;
   title: string | null;
   category: string;
-  score: { avgTotal: number; scoreCount: number; avgS1: number; avgS2: number; avgS3: number; avgS4: number; avgS5: number };
+  score: {
+    avgTotal: number;
+    scoreCount: number;
+    avgS1: number;
+    avgS2: number;
+    avgS3: number;
+    avgS4: number;
+    avgS5: number;
+  };
 };
 
 type Resp = {
@@ -24,33 +32,38 @@ type Resp = {
 };
 
 const categories = [
-  { label: "科普剧", value: "DRAMA" },
-  { label: "科普视频", value: "VIDEO" },
-  { label: "科幻画", value: "SCIFI_PAINT" },
-  { label: "创意作品", value: "CREATIVE_APP" },
+  { label: '科普剧', value: 'DRAMA' },
+  { label: '科普视频', value: 'VIDEO' },
+  { label: '科幻画', value: 'SCIFI_PAINT' },
+  { label: '创意作品', value: 'CREATIVE_APP' },
 ];
 
 export default function RankingPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
-  const [category, setCategory] = useState("VIDEO");
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
+  const [category, setCategory] = useState('VIDEO');
   const [data, setData] = useState<Resp | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const exportUrl = useMemo(() => `${apiBase}/admin/publications/export?category=${encodeURIComponent(category)}`, [apiBase, category]);
+  const exportUrl = useMemo(
+    () => `${apiBase}/admin/publications/export?category=${encodeURIComponent(category)}`,
+    [apiBase, category],
+  );
 
   useEffect(() => {
     let mounted = true;
     setLoading(true);
     setError(null);
-    apiFetch<Resp>(`/admin/publications/leaderboard?category=${encodeURIComponent(category)}&page=1&pageSize=100`)
+    apiFetch<Resp>(
+      `/admin/publications/leaderboard?category=${encodeURIComponent(category)}&page=1&pageSize=100`,
+    )
       .then((d) => {
         if (!mounted) return;
         setData(d);
       })
       .catch((e) => {
         if (!mounted) return;
-        setError(e instanceof Error ? e.message : "加载失败");
+        setError(e instanceof Error ? e.message : '加载失败');
         setData(null);
       })
       .finally(() => {
@@ -128,7 +141,7 @@ export default function RankingPage() {
                     <tr key={it.submissionId} className="border-b last:border-b-0">
                       <td className="py-3 pr-4 font-medium text-zinc-900">#{it.rank}</td>
                       <td className="py-3 pr-4 text-zinc-700">{it.blindCode}</td>
-                      <td className="py-3 pr-4 text-zinc-900">{it.title ?? "-"}</td>
+                      <td className="py-3 pr-4 text-zinc-900">{it.title ?? '-'}</td>
                       <td className="py-3 pr-4 text-zinc-700">{labelCategory(it.category)}</td>
                       <td className="py-3 pr-4 text-zinc-900">{it.score.avgTotal}</td>
                       <td className="py-3 pr-4 text-zinc-700">{it.score.scoreCount}</td>
@@ -150,4 +163,3 @@ export default function RankingPage() {
     </div>
   );
 }
-

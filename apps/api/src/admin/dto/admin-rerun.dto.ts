@@ -7,4 +7,3 @@ export class AdminRerunDto {
   @IsEnum(ReviewTaskType, { each: true })
   types!: ReviewTaskType[];
 }
-

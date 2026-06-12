@@ -7,4 +7,3 @@ import { SubmissionsService } from './submissions.service';
   providers: [SubmissionsService],
 })
 export class SubmissionsModule {}
-

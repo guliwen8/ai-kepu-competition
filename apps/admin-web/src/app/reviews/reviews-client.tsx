@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { apiFetch } from "@/lib/api";
-import { clearTokens } from "@/lib/auth";
+import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { apiFetch } from '@/lib/api';
+import { clearTokens } from '@/lib/auth';
 import {
   labelCategory,
   labelReviewSummary,
   labelReviewTaskStatus,
   labelReviewTaskType,
   labelSubmissionStatus,
-} from "@/lib/labels";
+} from '@/lib/labels';
 
 type TaskBrief = { type: string; status: string };
 
@@ -38,10 +38,11 @@ type ListResponse = {
 };
 
 function statusBadge(status: string) {
-  const base = "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium";
-  if (status === "FAIL" || status === "NEED_FIX" || status === "REJECTED") return `${base} bg-red-100 text-red-700`;
-  if (status === "PASS" || status === "APPROVED") return `${base} bg-emerald-100 text-emerald-700`;
-  if (status === "NEED_MANUAL") return `${base} bg-amber-100 text-amber-700`;
+  const base = 'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium';
+  if (status === 'FAIL' || status === 'NEED_FIX' || status === 'REJECTED')
+    return `${base} bg-red-100 text-red-700`;
+  if (status === 'PASS' || status === 'APPROVED') return `${base} bg-emerald-100 text-emerald-700`;
+  if (status === 'NEED_MANUAL') return `${base} bg-amber-100 text-amber-700`;
   return `${base} bg-zinc-100 text-zinc-700`;
 }
 
@@ -52,16 +53,16 @@ export default function ReviewsClient() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const page = Number(params.get("page") ?? "1");
-  const q = params.get("q") ?? "";
-  const status = params.get("status") ?? "";
+  const page = Number(params.get('page') ?? '1');
+  const q = params.get('q') ?? '';
+  const status = params.get('status') ?? '';
 
   const queryString = useMemo(() => {
     const sp = new URLSearchParams();
-    sp.set("page", String(Number.isFinite(page) && page > 0 ? page : 1));
-    sp.set("pageSize", "20");
-    if (q) sp.set("q", q);
-    if (status) sp.set("status", status);
+    sp.set('page', String(Number.isFinite(page) && page > 0 ? page : 1));
+    sp.set('pageSize', '20');
+    if (q) sp.set('q', q);
+    if (status) sp.set('status', status);
     return sp.toString();
   }, [page, q, status]);
 
@@ -76,11 +77,11 @@ export default function ReviewsClient() {
       })
       .catch((e) => {
         if (!mounted) return;
-        const msg = e instanceof Error ? e.message : "加载失败";
+        const msg = e instanceof Error ? e.message : '加载失败';
         setError(msg);
-        if (msg.includes("401")) {
+        if (msg.includes('401')) {
           clearTokens();
-          router.push("/login");
+          router.push('/login');
         }
       })
       .finally(() => {
@@ -94,9 +95,10 @@ export default function ReviewsClient() {
 
   function go(next: { page?: number; q?: string; status?: string }) {
     const sp = new URLSearchParams();
-    sp.set("page", String(next.page ?? page ?? 1));
-    if (next.q != null ? next.q : q) sp.set("q", next.q != null ? next.q : q);
-    if (next.status != null ? next.status : status) sp.set("status", next.status != null ? next.status : status);
+    sp.set('page', String(next.page ?? page ?? 1));
+    if (next.q != null ? next.q : q) sp.set('q', next.q != null ? next.q : q);
+    if (next.status != null ? next.status : status)
+      sp.set('status', next.status != null ? next.status : status);
     router.push(`/reviews?${sp.toString()}`);
   }
 
@@ -139,7 +141,7 @@ export default function ReviewsClient() {
                 <option value="REJECTED">已拒绝</option>
               </select>
             </div>
-            <div className="text-sm text-zinc-600">total={data?.total ?? "-"}</div>
+            <div className="text-sm text-zinc-600">total={data?.total ?? '-'}</div>
           </div>
 
           {error ? <div className="mt-4 text-sm text-red-600 break-words">{error}</div> : null}
@@ -166,13 +168,15 @@ export default function ReviewsClient() {
                       </td>
                       <td className="py-3 pr-4 text-zinc-700">{labelCategory(it.category)}</td>
                       <td className="py-3 pr-4">
-                        <span className={statusBadge(it.status)}>{labelSubmissionStatus(it.status)}</span>
+                        <span className={statusBadge(it.status)}>
+                          {labelSubmissionStatus(it.status)}
+                        </span>
                       </td>
                       <td className="py-3 pr-4 text-zinc-700">
                         {it.latestReview ? (
                           <div className="space-y-1">
                             <div className="text-xs">
-                              {labelReviewSummary(it.latestReview.summary)} ·{" "}
+                              {labelReviewSummary(it.latestReview.summary)} ·{' '}
                               {new Date(it.latestReview.createdAt).toLocaleString()}
                             </div>
                             <div className="flex flex-wrap gap-1">
@@ -184,7 +188,7 @@ export default function ReviewsClient() {
                             </div>
                           </div>
                         ) : (
-                          "-"
+                          '-'
                         )}
                       </td>
                       <td className="py-3 pr-4">
@@ -227,4 +231,3 @@ export default function ReviewsClient() {
     </div>
   );
 }
-

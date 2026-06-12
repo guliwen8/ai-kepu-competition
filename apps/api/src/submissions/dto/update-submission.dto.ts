@@ -26,4 +26,3 @@ export class UpdateSubmissionDto {
   @MaxLength(50)
   teacherContact?: string;
 }
-

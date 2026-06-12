@@ -1,7 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 
-type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue };
+type JsonValue =
+  | null
+  | boolean
+  | number
+  | string
+  | JsonValue[]
+  | { [key: string]: JsonValue };
 
 function loadEnv(): Record<string, string> {
   let dir = process.cwd();
@@ -17,7 +23,10 @@ function loadEnv(): Record<string, string> {
         if (idx <= 0) continue;
         const key = line.slice(0, idx).trim();
         let value = line.slice(idx + 1).trim();
-        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        if (
+          (value.startsWith('"') && value.endsWith('"')) ||
+          (value.startsWith("'") && value.endsWith("'"))
+        ) {
           value = value.slice(1, -1);
         }
         out[key] = value;
@@ -65,12 +74,16 @@ async function requestJson<T extends JsonValue>(args: {
 async function main() {
   const baseUrl = process.env.API_BASE_URL ?? 'http://localhost:3001';
   const env = loadEnv();
-  const bootstrapToken = process.env.ADMIN_BOOTSTRAP_TOKEN ?? env.ADMIN_BOOTSTRAP_TOKEN ?? '';
+  const bootstrapToken =
+    process.env.ADMIN_BOOTSTRAP_TOKEN ?? env.ADMIN_BOOTSTRAP_TOKEN ?? '';
 
   const phone = process.env.SMOKE_PHONE ?? '13957512889';
   const code = process.env.SMOKE_CODE ?? '000000';
 
-  const login1 = await requestJson<{ accessToken: string; refreshToken: string }>({
+  const login1 = await requestJson<{
+    accessToken: string;
+    refreshToken: string;
+  }>({
     baseUrl,
     path: '/auth/login/sms',
     method: 'POST',
@@ -88,7 +101,10 @@ async function main() {
     });
   }
 
-  const login2 = await requestJson<{ accessToken: string; refreshToken: string }>({
+  const login2 = await requestJson<{
+    accessToken: string;
+    refreshToken: string;
+  }>({
     baseUrl,
     path: '/auth/login/sms',
     method: 'POST',
@@ -102,7 +118,9 @@ async function main() {
     token: login2.accessToken,
   });
   if (!me.roles.includes('admin')) {
-    throw new Error('当前用户不是 admin，请先配置 ADMIN_BOOTSTRAP_TOKEN 或使用已授予 admin 的手机号运行');
+    throw new Error(
+      '当前用户不是 admin，请先配置 ADMIN_BOOTSTRAP_TOKEN 或使用已授予 admin 的手机号运行',
+    );
   }
 
   const list = await requestJson<JsonValue>({
@@ -112,7 +130,9 @@ async function main() {
     token: login2.accessToken,
   });
 
-  const items = Array.isArray((list as any)?.items) ? ((list as any).items as any[]) : [];
+  const items = Array.isArray((list as any)?.items)
+    ? ((list as any).items as any[])
+    : [];
   const firstId = items[0]?.id;
   const detail = firstId
     ? await requestJson<JsonValue>({

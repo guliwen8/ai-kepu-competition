@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { apiFetch } from "@/lib/api";
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { apiFetch } from '@/lib/api';
 
 type Competition = {
   id: string;
@@ -22,10 +22,10 @@ type Competition = {
 };
 
 function toInputValue(v: string | null) {
-  if (!v) return "";
+  if (!v) return '';
   const d = new Date(v);
-  if (Number.isNaN(d.getTime())) return "";
-  const pad = (n: number) => String(n).padStart(2, "0");
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
@@ -37,11 +37,11 @@ function fromInputValue(v: string) {
 }
 
 function phaseLabel(p: string) {
-  if (p === "DRAFT") return "未开始";
-  if (p === "SUBMISSION") return "提交中";
-  if (p === "JUDGING") return "评审中";
-  if (p === "PUBLIC") return "公示中";
-  if (p === "ENDED") return "已结束";
+  if (p === 'DRAFT') return '未开始';
+  if (p === 'SUBMISSION') return '提交中';
+  if (p === 'JUDGING') return '评审中';
+  if (p === 'PUBLIC') return '公示中';
+  if (p === 'ENDED') return '已结束';
   return p;
 }
 
@@ -54,28 +54,28 @@ export default function CompetitionsPage() {
   const current = useMemo(() => items.find((c) => c.isCurrent) ?? null, [items]);
 
   const [creating, setCreating] = useState(false);
-  const [newTitle, setNewTitle] = useState("绍兴市高校AI科普大赛");
-  const [newTheme, setNewTheme] = useState("");
+  const [newTitle, setNewTitle] = useState('绍兴市高校AI科普大赛');
+  const [newTheme, setNewTheme] = useState('');
 
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [fSubmissionStart, setFSubmissionStart] = useState("");
-  const [fSubmissionEnd, setFSubmissionEnd] = useState("");
-  const [fJudgingStart, setFJudgingStart] = useState("");
-  const [fJudgingEnd, setFJudgingEnd] = useState("");
-  const [fPublicStart, setFPublicStart] = useState("");
-  const [fPublicEnd, setFPublicEnd] = useState("");
-  const [fConfig, setFConfig] = useState("");
+  const [fSubmissionStart, setFSubmissionStart] = useState('');
+  const [fSubmissionEnd, setFSubmissionEnd] = useState('');
+  const [fJudgingStart, setFJudgingStart] = useState('');
+  const [fJudgingEnd, setFJudgingEnd] = useState('');
+  const [fPublicStart, setFPublicStart] = useState('');
+  const [fPublicEnd, setFPublicEnd] = useState('');
+  const [fConfig, setFConfig] = useState('');
   const [saving, setSaving] = useState(false);
 
   async function load() {
     setLoading(true);
     setError(null);
     try {
-      const data = await apiFetch<Competition[]>("/admin/competitions");
+      const data = await apiFetch<Competition[]>('/admin/competitions');
       setItems(data);
       setCurrentId(data.find((c) => c.isCurrent)?.id ?? null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "加载失败");
+      setError(e instanceof Error ? e.message : '加载失败');
     } finally {
       setLoading(false);
     }
@@ -109,10 +109,10 @@ export default function CompetitionsPage() {
       try {
         config = fConfig.trim() ? JSON.parse(fConfig) : null;
       } catch {
-        throw new Error("配置 JSON 解析失败");
+        throw new Error('配置 JSON 解析失败');
       }
       await apiFetch(`/admin/competitions/${editingId}`, {
-        method: "PUT",
+        method: 'PUT',
         body: JSON.stringify({
           submissionStart: fromInputValue(fSubmissionStart),
           submissionEnd: fromInputValue(fSubmissionEnd),
@@ -126,7 +126,7 @@ export default function CompetitionsPage() {
       setEditingId(null);
       await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "保存失败");
+      setError(e instanceof Error ? e.message : '保存失败');
     } finally {
       setSaving(false);
     }
@@ -135,10 +135,10 @@ export default function CompetitionsPage() {
   async function setCurrent(id: string) {
     setError(null);
     try {
-      await apiFetch(`/admin/competitions/${id}/set-current`, { method: "POST" });
+      await apiFetch(`/admin/competitions/${id}/set-current`, { method: 'POST' });
       await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "设置失败");
+      setError(e instanceof Error ? e.message : '设置失败');
     }
   }
 
@@ -146,17 +146,17 @@ export default function CompetitionsPage() {
     setCreating(true);
     setError(null);
     try {
-      await apiFetch("/admin/competitions", {
-        method: "POST",
+      await apiFetch('/admin/competitions', {
+        method: 'POST',
         body: JSON.stringify({
           title: newTitle.trim(),
           theme: newTheme.trim() || undefined,
         }),
       });
-      setNewTheme("");
+      setNewTheme('');
       await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "创建失败");
+      setError(e instanceof Error ? e.message : '创建失败');
     } finally {
       setCreating(false);
     }
@@ -167,7 +167,10 @@ export default function CompetitionsPage() {
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold text-zinc-900">赛事管理</h1>
-          <Link className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm" href="/dashboard">
+          <Link
+            className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm"
+            href="/dashboard"
+          >
             返回
           </Link>
         </div>
@@ -192,7 +195,7 @@ export default function CompetitionsPage() {
               onClick={create}
               disabled={creating || !newTitle.trim()}
             >
-              {creating ? "创建中..." : "创建"}
+              {creating ? '创建中...' : '创建'}
             </button>
           </div>
           {error ? <div className="mt-2 text-sm text-red-600 break-words">{error}</div> : null}
@@ -201,14 +204,17 @@ export default function CompetitionsPage() {
         <div className="mt-6 rounded-xl border border-zinc-200 bg-white p-4">
           <div className="flex items-center justify-between">
             <div className="text-sm font-medium text-zinc-900">
-              赛事列表 {current ? <span className="text-zinc-500 font-normal">（当前：{current.title}）</span> : null}
+              赛事列表{' '}
+              {current ? (
+                <span className="text-zinc-500 font-normal">（当前：{current.title}）</span>
+              ) : null}
             </div>
             <button
               className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm disabled:opacity-60"
               onClick={load}
               disabled={loading}
             >
-              {loading ? "刷新中..." : "刷新"}
+              {loading ? '刷新中...' : '刷新'}
             </button>
           </div>
 
@@ -218,7 +224,7 @@ export default function CompetitionsPage() {
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <div className="font-medium text-zinc-900 truncate">
-                      {c.title}{" "}
+                      {c.title}{' '}
                       {c.isCurrent ? (
                         <span className="ml-2 inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">
                           当前
@@ -321,9 +327,12 @@ export default function CompetitionsPage() {
                         onClick={saveEdit}
                         disabled={saving}
                       >
-                        {saving ? "保存中..." : "保存"}
+                        {saving ? '保存中...' : '保存'}
                       </button>
-                      <button className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm" onClick={cancelEdit}>
+                      <button
+                        className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm"
+                        onClick={cancelEdit}
+                      >
                         取消
                       </button>
                     </div>
@@ -334,7 +343,9 @@ export default function CompetitionsPage() {
           </div>
 
           {items.length === 0 ? <div className="text-sm text-zinc-600">暂无赛事</div> : null}
-          {currentId ? null : <div className="mt-2 text-xs text-zinc-500">提示：创建第一个赛事会自动设为当前。</div>}
+          {currentId ? null : (
+            <div className="mt-2 text-xs text-zinc-500">提示：创建第一个赛事会自动设为当前。</div>
+          )}
         </div>
       </div>
     </div>

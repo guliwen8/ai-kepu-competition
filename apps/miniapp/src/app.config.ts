@@ -6,13 +6,13 @@ export default defineAppConfig({
     'pages/submissions/index',
     'pages/submission-detail/index',
     'pages/mine/index',
-    'pages/login/index'
+    'pages/login/index',
   ],
   window: {
     backgroundTextStyle: 'light',
     navigationBarBackgroundColor: '#fff',
     navigationBarTitleText: 'AI科普大赛',
-    navigationBarTextStyle: 'black'
+    navigationBarTextStyle: 'black',
   },
   tabBar: {
     color: '#4E5969',
@@ -22,16 +22,16 @@ export default defineAppConfig({
     list: [
       {
         pagePath: 'pages/index/index',
-        text: '首页'
+        text: '首页',
       },
       {
         pagePath: 'pages/submit/index',
-        text: '报名'
+        text: '报名',
       },
       {
         pagePath: 'pages/mine/index',
-        text: '我的'
-      }
-    ]
-  }
-})
+        text: '我的',
+      },
+    ],
+  },
+});

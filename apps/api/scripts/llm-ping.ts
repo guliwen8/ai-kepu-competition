@@ -24,7 +24,10 @@ function loadDotEnv(): { loaded: boolean; path?: string } {
     if (idx <= 0) continue;
     const key = line.slice(0, idx).trim();
     let value = line.slice(idx + 1).trim();
-    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
       value = value.slice(1, -1);
     }
     if (process.env[key] == null) process.env[key] = value;
@@ -94,9 +97,12 @@ async function main() {
   }
 
   const model =
-    process.env.LLM_MODEL ?? (baseUrl.includes('minimaxi.com') ? 'MiniMax-M2.7' : 'gpt-4o-mini');
+    process.env.LLM_MODEL ??
+    (baseUrl.includes('minimaxi.com') ? 'MiniMax-M2.7' : 'gpt-4o-mini');
   const timeoutMs = Number(process.env.LLM_TIMEOUT_MS ?? '8000');
-  const chatPath = (process.env.LLM_CHAT_PATH ?? '/chat/completions').startsWith('/')
+  const chatPath = (
+    process.env.LLM_CHAT_PATH ?? '/chat/completions'
+  ).startsWith('/')
     ? (process.env.LLM_CHAT_PATH ?? '/chat/completions')
     : `/${process.env.LLM_CHAT_PATH ?? 'chat/completions'}`;
   const apiKeyHeader = process.env.LLM_API_KEY_HEADER ?? 'Authorization';
@@ -106,9 +112,13 @@ async function main() {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
     if (apiKeyHeader.toLowerCase() === 'authorization') {
-      headers[apiKeyHeader] = apiKeyPrefix ? `${apiKeyPrefix} ${apiKey}` : apiKey;
+      headers[apiKeyHeader] = apiKeyPrefix
+        ? `${apiKeyPrefix} ${apiKey}`
+        : apiKey;
     } else {
       headers[apiKeyHeader] = apiKey;
     }
@@ -119,7 +129,11 @@ async function main() {
       body: JSON.stringify({
         model,
         messages: [
-          { role: 'system', content: '只输出一个 <json>...</json> 包裹的 JSON 对象，不要输出任何额外文字或思考过程。' },
+          {
+            role: 'system',
+            content:
+              '只输出一个 <json>...</json> 包裹的 JSON 对象，不要输出任何额外文字或思考过程。',
+          },
           {
             role: 'user',
             content: JSON.stringify(
@@ -153,7 +167,8 @@ async function main() {
           model,
           hasChoices: Array.isArray(json?.choices),
           bodyPreview: text ? text.slice(0, 500) : null,
-          contentPreview: typeof content === 'string' ? content.slice(0, 200) : null,
+          contentPreview:
+            typeof content === 'string' ? content.slice(0, 200) : null,
           jsonTagPreview: tag ? tag.slice(0, 200) : null,
           parsedFromTag: parsed ?? null,
         },
@@ -165,11 +180,18 @@ async function main() {
     if (!res.ok) {
       const modelsUrl = `${baseUrl}/models`;
       try {
-        const mRes = await fetch(modelsUrl, { headers, method: 'GET', signal: controller.signal });
+        const mRes = await fetch(modelsUrl, {
+          headers,
+          method: 'GET',
+          signal: controller.signal,
+        });
         const mText = await mRes.text();
         const mJson = safeParseJson<any>(mText);
         const ids = Array.isArray(mJson?.data)
-          ? mJson.data.map((x: any) => x?.id).filter(Boolean).slice(0, 20)
+          ? mJson.data
+              .map((x: any) => x?.id)
+              .filter(Boolean)
+              .slice(0, 20)
           : [];
         console.log(
           JSON.stringify(

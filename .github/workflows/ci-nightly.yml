@@ -2,7 +2,7 @@ name: ci/nightly
 
 on:
   schedule:
-    - cron: "0 2 * * *" # Asia/Shanghai 10:00（GitHub cron is UTC）
+    - cron: '0 2 * * *' # Asia/Shanghai 10:00（GitHub cron is UTC）
   workflow_dispatch: {}
 
 permissions:

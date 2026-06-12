@@ -36,14 +36,17 @@ export class SubmissionsController {
 
   @Post()
   async create(@Req() req: any, @Body() dto: CreateSubmissionDto) {
-    const r = await this.submissionsService.createDraft(req.user.userId, dto as any);
+    const r = await this.submissionsService.createDraft(req.user.userId, dto);
     await this.auditService.write({
       actorUserId: req.user?.userId,
       actorRoles: req.user?.roles,
       action: 'PARTICIPANT_SUBMISSION_CREATE_DRAFT',
       resourceType: 'Submission',
       resourceId: (r as any)?.id ?? null,
-      after: { id: (r as any)?.id ?? null, category: (dto as any)?.category ?? null },
+      after: {
+        id: (r as any)?.id ?? null,
+        category: (dto as any)?.category ?? null,
+      },
       ip: req.ip,
       userAgent: req.headers?.['user-agent'],
     });
@@ -61,8 +64,16 @@ export class SubmissionsController {
   }
 
   @Put(':id')
-  async update(@Req() req: any, @Param('id') id: string, @Body() dto: UpdateSubmissionDto) {
-    const r = await this.submissionsService.updateDraft(req.user.userId, id, dto as any);
+  async update(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() dto: UpdateSubmissionDto,
+  ) {
+    const r = await this.submissionsService.updateDraft(
+      req.user.userId,
+      id,
+      dto as any,
+    );
     await this.auditService.write({
       actorUserId: req.user?.userId,
       actorRoles: req.user?.roles,
@@ -82,7 +93,10 @@ export class SubmissionsController {
     FileInterceptor('file', {
       storage: diskStorage({
         destination: (req, file, cb) => {
-          const base = resolve(process.cwd(), process.env.UPLOAD_DIR ?? './uploads');
+          const base = resolve(
+            process.cwd(),
+            process.env.UPLOAD_DIR ?? './uploads',
+          );
           const dir = resolve(base, (req as any).params?.id ?? 'unknown');
           mkdirSync(dir, { recursive: true });
           cb(null, dir);
@@ -103,7 +117,9 @@ export class SubmissionsController {
     @Param('kind') kind: string,
     @UploadedFile() file?: Express.Multer.File,
   ) {
-    const k = (AttachmentKind as any)[kind as any] as AttachmentKind | undefined;
+    const k = (AttachmentKind as any)[kind as any] as
+      | AttachmentKind
+      | undefined;
     if (!k) {
       throw new BadRequestException('无效的 kind');
     }

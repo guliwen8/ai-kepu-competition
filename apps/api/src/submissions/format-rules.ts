@@ -27,7 +27,9 @@ const MB = 1024 * 1024;
 
 function normalizeRequirement(raw: any): CategoryRequirement | null {
   if (!raw || typeof raw !== 'object') return null;
-  const requiredKinds = Array.isArray(raw.requiredKinds) ? raw.requiredKinds.filter((k) => typeof k === 'string') : null;
+  const requiredKinds = Array.isArray(raw.requiredKinds)
+    ? raw.requiredKinds.filter((k) => typeof k === 'string')
+    : null;
   const rulesRaw = Array.isArray(raw.rules) ? raw.rules : null;
   if (!requiredKinds || !rulesRaw) return null;
 
@@ -35,21 +37,32 @@ function normalizeRequirement(raw: any): CategoryRequirement | null {
   for (const r of rulesRaw) {
     if (!r || typeof r !== 'object') continue;
     if (typeof r.kind !== 'string') continue;
-    if (typeof r.durationSecMin === 'number' && typeof r.durationSecMax === 'number') {
-      rules.push({ kind: r.kind, durationSecMin: r.durationSecMin, durationSecMax: r.durationSecMax });
+    if (
+      typeof r.durationSecMin === 'number' &&
+      typeof r.durationSecMax === 'number'
+    ) {
+      rules.push({
+        kind: r.kind,
+        durationSecMin: r.durationSecMin,
+        durationSecMax: r.durationSecMax,
+      });
       continue;
     }
     const rule: any = { kind: r.kind };
     if (typeof r.maxBytes === 'number') rule.maxBytes = r.maxBytes;
     if (typeof r.minBytes === 'number') rule.minBytes = r.minBytes;
-    if (Array.isArray(r.mimeTypes)) rule.mimeTypes = r.mimeTypes.filter((m: any) => typeof m === 'string');
+    if (Array.isArray(r.mimeTypes))
+      rule.mimeTypes = r.mimeTypes.filter((m: any) => typeof m === 'string');
     rules.push(rule);
   }
 
-  return { requiredKinds: requiredKinds as any, rules: rules as any };
+  return { requiredKinds: requiredKinds, rules: rules as any };
 }
 
-export function requirementFor(category: SubmissionCategory, competitionConfig?: any): CategoryRequirement {
+export function requirementFor(
+  category: SubmissionCategory,
+  competitionConfig?: any,
+): CategoryRequirement {
   const override = competitionConfig?.materialRequirements?.[category];
   const normalized = normalizeRequirement(override);
   if (normalized) return normalized;

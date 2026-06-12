@@ -3,17 +3,28 @@ import { Injectable } from '@nestjs/common';
 type Key = string;
 
 function labelEscape(v: string) {
-  return v.replaceAll('\\', '\\\\').replaceAll('\n', '\\n').replaceAll('"', '\\"');
+  return v
+    .replaceAll('\\', '\\\\')
+    .replaceAll('\n', '\\n')
+    .replaceAll('"', '\\"');
 }
 
 function safePath(p: string) {
   const q = p.indexOf('?');
   const raw = q >= 0 ? p.slice(0, q) : p;
-  const segs = raw.split('/').map((s) => s.trim()).filter(Boolean);
+  const segs = raw
+    .split('/')
+    .map((s) => s.trim())
+    .filter(Boolean);
   const masked = segs.map((s) => {
     const lower = s.toLowerCase();
     if (/^[0-9]+$/.test(s) && s.length >= 4) return ':id';
-    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(lower)) return ':id';
+    if (
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(
+        lower,
+      )
+    )
+      return ':id';
     if (/^c[0-9a-z]{20,}$/.test(lower)) return ':id';
     if (/^[0-9a-z]{24,}$/.test(lower)) return ':id';
     return s;
@@ -28,31 +39,46 @@ export class MetricsService {
   private readonly startedAtMs = Date.now();
   private readonly counts = new Map<Key, number>();
 
-  observe(args: { method: string; path: string; status: number; durationMs: number }) {
+  observe(args: {
+    method: string;
+    path: string;
+    status: number;
+    durationMs: number;
+  }) {
     const method = args.method.toUpperCase();
     const path = safePath(args.path);
     const status = String(args.status);
 
-    const inc = (k: Key, n = 1) => this.counts.set(k, (this.counts.get(k) ?? 0) + n);
+    const inc = (k: Key, n = 1) =>
+      this.counts.set(k, (this.counts.get(k) ?? 0) + n);
 
     inc(`requests_total|method=${method}|path=${path}|status=${status}`);
     inc(`requests_total|method=${method}|path=${path}|status=all`);
     inc(`requests_total|method=${method}|path=all|status=all`);
 
-    if (args.status >= 500) inc(`requests_5xx_total|method=${method}|path=${path}`);
+    if (args.status >= 500)
+      inc(`requests_5xx_total|method=${method}|path=${path}`);
 
     const ms = Math.max(0, args.durationMs);
     inc(`request_duration_ms_sum|method=${method}|path=${path}`, ms);
     inc(`request_duration_ms_count|method=${method}|path=${path}`, 1);
   }
 
-  observeDb(args: { model: string; action: string; durationMs: number; ok: boolean }) {
+  observeDb(args: {
+    model: string;
+    action: string;
+    durationMs: number;
+    ok: boolean;
+  }) {
     const model = args.model || 'unknown';
     const action = args.action || 'unknown';
 
-    const inc = (k: Key, n = 1) => this.counts.set(k, (this.counts.get(k) ?? 0) + n);
+    const inc = (k: Key, n = 1) =>
+      this.counts.set(k, (this.counts.get(k) ?? 0) + n);
 
-    inc(`db_queries_total|model=${model}|action=${action}|ok=${args.ok ? '1' : '0'}`);
+    inc(
+      `db_queries_total|model=${model}|action=${action}|ok=${args.ok ? '1' : '0'}`,
+    );
     inc(`db_queries_total|model=${model}|action=${action}|ok=all`);
 
     const ms = Math.max(0, args.durationMs);
@@ -114,7 +140,10 @@ export class MetricsService {
         labels[p.slice(0, idx)] = p.slice(idx + 1);
       }
       const labelStr = `{method="${labelEscape(labels.method ?? '')}",path="${labelEscape(labels.path ?? '')}"}`;
-      const count = this.counts.get(`request_duration_ms_count|method=${labels.method}|path=${labels.path}`) ?? 0;
+      const count =
+        this.counts.get(
+          `request_duration_ms_count|method=${labels.method}|path=${labels.path}`,
+        ) ?? 0;
       lines.push(`api_request_duration_ms_sum${labelStr} ${v}`);
       lines.push(`api_request_duration_ms_count${labelStr} ${count}`);
     }
@@ -146,12 +175,17 @@ export class MetricsService {
         labels[p.slice(0, idx)] = p.slice(idx + 1);
       }
       const labelStr = `{model="${labelEscape(labels.model ?? '')}",action="${labelEscape(labels.action ?? '')}"}`;
-      const count = this.counts.get(`db_query_duration_ms_count|model=${labels.model}|action=${labels.action}`) ?? 0;
+      const count =
+        this.counts.get(
+          `db_query_duration_ms_count|model=${labels.model}|action=${labels.action}`,
+        ) ?? 0;
       lines.push(`api_db_query_duration_ms_sum${labelStr} ${v}`);
       lines.push(`api_db_query_duration_ms_count${labelStr} ${count}`);
     }
 
-    lines.push('# HELP api_db_slow_queries_total DB slow queries total (>=500ms)');
+    lines.push(
+      '# HELP api_db_slow_queries_total DB slow queries total (>=500ms)',
+    );
     lines.push('# TYPE api_db_slow_queries_total counter');
     for (const [k, v] of this.counts.entries()) {
       if (!k.startsWith('db_slow_queries_total|')) continue;

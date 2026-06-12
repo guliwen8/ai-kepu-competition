@@ -27,4 +27,3 @@ export function runContentRules(input: ContentCheckInput): {
 
   return { pass: findings.length === 0, findings };
 }
-

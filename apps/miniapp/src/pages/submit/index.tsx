@@ -30,11 +30,14 @@ type MaterialItem = {
 };
 
 function normalizeSubmissionCategory(raw: any): SubmissionCategory | null {
-  if (raw === 'DRAMA' || raw === 'VIDEO' || raw === 'SCIFI_PAINT' || raw === 'CREATIVE_APP') return raw;
+  if (raw === 'DRAMA' || raw === 'VIDEO' || raw === 'SCIFI_PAINT' || raw === 'CREATIVE_APP')
+    return raw;
   return null;
 }
 
-function categoryOptionsFromCompetitionConfig(config: any): Array<{ label: string; value: SubmissionCategory }> | null {
+function categoryOptionsFromCompetitionConfig(
+  config: any,
+): Array<{ label: string; value: SubmissionCategory }> | null {
   if (Array.isArray(config?.categoryOptions)) {
     const out: Array<{ label: string; value: SubmissionCategory }> = [];
     for (const it of config.categoryOptions) {
@@ -48,7 +51,9 @@ function categoryOptionsFromCompetitionConfig(config: any): Array<{ label: strin
   }
 
   if (Array.isArray(config?.allowedCategories)) {
-    const allowed = config.allowedCategories.map((v: any) => normalizeSubmissionCategory(v)).filter(Boolean) as SubmissionCategory[];
+    const allowed = config.allowedCategories
+      .map((v: any) => normalizeSubmissionCategory(v))
+      .filter(Boolean) as SubmissionCategory[];
     const set = new Set(allowed);
     const out = defaultCategoryOptions.filter((o) => set.has(o.value));
     if (out.length) return out;
@@ -69,8 +74,20 @@ type FieldCfg = {
 
 function fieldCfgFromCompetitionConfig(config: any, key: FieldKey): FieldCfg {
   const defaults: Record<FieldKey, FieldCfg> = {
-    title: { enabled: true, required: true, label: '作品标题', placeholder: '请输入作品标题（必填）', maxLength: 80 },
-    intro: { enabled: true, required: false, label: '作品简介', placeholder: '可选，300 字以内', maxLength: 300 },
+    title: {
+      enabled: true,
+      required: true,
+      label: '作品标题',
+      placeholder: '请输入作品标题（必填）',
+      maxLength: 80,
+    },
+    intro: {
+      enabled: true,
+      required: false,
+      label: '作品简介',
+      placeholder: '可选，300 字以内',
+      maxLength: 300,
+    },
     aiToolsUsage: {
       enabled: true,
       required: false,
@@ -78,7 +95,13 @@ function fieldCfgFromCompetitionConfig(config: any, key: FieldKey): FieldCfg {
       placeholder: '如使用了 AI，请说明工具与使用方式（建议填写）',
       maxLength: 500,
     },
-    teacherName: { enabled: true, required: true, label: '指导老师姓名', placeholder: '请输入指导老师姓名（必填）', maxLength: 50 },
+    teacherName: {
+      enabled: true,
+      required: true,
+      label: '指导老师姓名',
+      placeholder: '请输入指导老师姓名（必填）',
+      maxLength: 50,
+    },
     teacherContact: {
       enabled: true,
       required: true,
@@ -90,15 +113,23 @@ function fieldCfgFromCompetitionConfig(config: any, key: FieldKey): FieldCfg {
   };
 
   const raw = config?.registrationFields?.[key];
-  if (raw === false) return { ...defaults[key], enabled: key === 'title' ? true : false, required: key === 'title' ? true : false };
+  if (raw === false)
+    return {
+      ...defaults[key],
+      enabled: key === 'title' ? true : false,
+      required: key === 'title' ? true : false,
+    };
   if (raw && typeof raw === 'object') {
     const d = defaults[key];
     const enabled = typeof (raw as any).enabled === 'boolean' ? (raw as any).enabled : d.enabled;
-    const required = typeof (raw as any).required === 'boolean' ? (raw as any).required : d.required;
+    const required =
+      typeof (raw as any).required === 'boolean' ? (raw as any).required : d.required;
     const label = typeof (raw as any).label === 'string' ? (raw as any).label : d.label;
-    const placeholder = typeof (raw as any).placeholder === 'string' ? (raw as any).placeholder : d.placeholder;
+    const placeholder =
+      typeof (raw as any).placeholder === 'string' ? (raw as any).placeholder : d.placeholder;
     const hint = typeof (raw as any).hint === 'string' ? (raw as any).hint : d.hint;
-    const maxLength = typeof (raw as any).maxLength === 'number' ? (raw as any).maxLength : d.maxLength;
+    const maxLength =
+      typeof (raw as any).maxLength === 'number' ? (raw as any).maxLength : d.maxLength;
     return {
       enabled: key === 'title' ? true : enabled,
       required: key === 'title' ? true : required,
@@ -173,7 +204,8 @@ function normalizeMimeLabel(m: string) {
   if (lower === 'image/png') return 'PNG';
   if (lower === 'application/pdf') return 'PDF';
   if (lower === 'application/msword') return 'Word（.doc）';
-  if (lower === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') return 'Word（.docx）';
+  if (lower === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    return 'Word（.docx）';
   if (lower === 'application/zip' || lower === 'application/x-zip-compressed') return 'ZIP';
   const seg = lower.split('/')[1];
   return seg ? seg.toUpperCase() : m;
@@ -225,7 +257,10 @@ function rulesTextFromConfigRules(rulesRaw: any[]) {
   return parts.length ? parts.join('，') : '按赛事要求';
 }
 
-function requirementsFromCompetitionConfig(config: any, category: SubmissionCategory): MaterialItem[] | null {
+function requirementsFromCompetitionConfig(
+  config: any,
+  category: SubmissionCategory,
+): MaterialItem[] | null {
   const raw = config?.materialRequirements?.[category];
   if (!raw || typeof raw !== 'object') return null;
   const requiredKinds = Array.isArray((raw as any).requiredKinds)
@@ -291,9 +326,18 @@ const SubmitPage: React.FC = () => {
     () => !currentCompetition || currentCompetition.phase === 'SUBMISSION',
     [currentCompetition],
   );
-  const titleCfg = useMemo(() => fieldCfgFromCompetitionConfig(currentCompetition?.config, 'title'), [currentCompetition?.config]);
-  const introCfg = useMemo(() => fieldCfgFromCompetitionConfig(currentCompetition?.config, 'intro'), [currentCompetition?.config]);
-  const aiCfg = useMemo(() => fieldCfgFromCompetitionConfig(currentCompetition?.config, 'aiToolsUsage'), [currentCompetition?.config]);
+  const titleCfg = useMemo(
+    () => fieldCfgFromCompetitionConfig(currentCompetition?.config, 'title'),
+    [currentCompetition?.config],
+  );
+  const introCfg = useMemo(
+    () => fieldCfgFromCompetitionConfig(currentCompetition?.config, 'intro'),
+    [currentCompetition?.config],
+  );
+  const aiCfg = useMemo(
+    () => fieldCfgFromCompetitionConfig(currentCompetition?.config, 'aiToolsUsage'),
+    [currentCompetition?.config],
+  );
   const teacherNameCfg = useMemo(
     () => fieldCfgFromCompetitionConfig(currentCompetition?.config, 'teacherName'),
     [currentCompetition?.config],
@@ -364,8 +408,10 @@ const SubmitPage: React.FC = () => {
 
   function validateDraftFields() {
     if (titleCfg.required && !title.trim()) return '请填写作品标题';
-    if (teacherNameCfg.enabled && teacherNameCfg.required && !teacherName.trim()) return '请填写指导老师姓名';
-    if (teacherContactCfg.enabled && teacherContactCfg.required && !teacherContact.trim()) return '请填写指导老师联系方式';
+    if (teacherNameCfg.enabled && teacherNameCfg.required && !teacherName.trim())
+      return '请填写指导老师姓名';
+    if (teacherContactCfg.enabled && teacherContactCfg.required && !teacherContact.trim())
+      return '请填写指导老师联系方式';
     return null;
   }
 
@@ -383,7 +429,9 @@ const SubmitPage: React.FC = () => {
           intro: introCfg.enabled ? intro.trim() || undefined : undefined,
           aiToolsUsage: aiCfg.enabled ? aiToolsUsage.trim() || undefined : undefined,
           teacherName: teacherNameCfg.enabled ? teacherName.trim() || undefined : undefined,
-          teacherContact: teacherContactCfg.enabled ? teacherContact.trim() || undefined : undefined,
+          teacherContact: teacherContactCfg.enabled
+            ? teacherContact.trim() || undefined
+            : undefined,
         });
         setSubmissionId(sub.id);
         setSubmission(sub);
@@ -501,7 +549,8 @@ const SubmitPage: React.FC = () => {
         </Text>
         {currentCompetition ? (
           <Text className={styles.headerSub}>
-            当前赛事：{currentCompetition.title}（{labelCompetitionPhase(currentCompetition.phase)}）
+            当前赛事：{currentCompetition.title}（{labelCompetitionPhase(currentCompetition.phase)}
+            ）
           </Text>
         ) : null}
       </View>
@@ -546,7 +595,9 @@ const SubmitPage: React.FC = () => {
                 <View className={styles.input}>{categoryLabel}</View>
               )}
               <Text className={styles.hint}>
-                {!submissionId ? '请选择参赛作品类别，不同类别要求的材料不同' : '作品类别创建后不可修改'}
+                {!submissionId
+                  ? '请选择参赛作品类别，不同类别要求的材料不同'
+                  : '作品类别创建后不可修改'}
               </Text>
             </View>
 
@@ -610,7 +661,9 @@ const SubmitPage: React.FC = () => {
                   maxlength={teacherContactCfg.maxLength}
                   onInput={(e) => setTeacherContact(e.detail.value)}
                 />
-                {teacherContactCfg.hint ? <Text className={styles.hint}>{teacherContactCfg.hint}</Text> : null}
+                {teacherContactCfg.hint ? (
+                  <Text className={styles.hint}>{teacherContactCfg.hint}</Text>
+                ) : null}
               </View>
             ) : null}
           </View>
@@ -657,17 +710,22 @@ const SubmitPage: React.FC = () => {
                 />
               </View>
               <Text className={styles.hint}>
-                {privacyCfg.text || '我已阅读并同意隐私与匿名要求，提交材料中不包含作者/单位等身份信息。'}
+                {privacyCfg.text ||
+                  '我已阅读并同意隐私与匿名要求，提交材料中不包含作者/单位等身份信息。'}
               </Text>
             </View>
           ) : null}
 
           {!canSubmit ? (
-            <Text className={styles.hint}>当前不在报名投稿阶段，可先完善草稿与材料，报名开启后再提交。</Text>
+            <Text className={styles.hint}>
+              当前不在报名投稿阶段，可先完善草稿与材料，报名开启后再提交。
+            </Text>
           ) : null}
           <Button
             className={styles.secondaryBtn}
-            disabled={flowLoading || !submissionId || !canSubmit || (privacyCfg.enabled && !privacyAccepted)}
+            disabled={
+              flowLoading || !submissionId || !canSubmit || (privacyCfg.enabled && !privacyAccepted)
+            }
             onClick={submitNow}
           >
             提交并生成审核

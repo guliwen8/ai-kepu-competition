@@ -66,4 +66,3 @@ const server = http.createServer(async (req, res) => {
 server.listen(port, () => {
   process.stdout.write(`alertmanager webhook listening http://localhost:${port}${path}\n`);
 });
-

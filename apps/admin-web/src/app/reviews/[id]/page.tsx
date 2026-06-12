@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { apiFetch } from "@/lib/api";
-import { clearTokens } from "@/lib/auth";
+import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { apiFetch } from '@/lib/api';
+import { clearTokens } from '@/lib/auth';
 import {
   labelCategory,
   labelReviewSummary,
   labelReviewTaskStatus,
   labelReviewTaskType,
   labelSubmissionStatus,
-} from "@/lib/labels";
+} from '@/lib/labels';
 
 type ReviewTask = {
   id: string;
@@ -47,10 +47,11 @@ type DetailResponse = {
 };
 
 function statusBadge(status: string) {
-  const base = "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium";
-  if (status === "FAIL" || status === "NEED_FIX" || status === "REJECTED") return `${base} bg-red-100 text-red-700`;
-  if (status === "PASS" || status === "APPROVED") return `${base} bg-emerald-100 text-emerald-700`;
-  if (status === "NEED_MANUAL") return `${base} bg-amber-100 text-amber-700`;
+  const base = 'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium';
+  if (status === 'FAIL' || status === 'NEED_FIX' || status === 'REJECTED')
+    return `${base} bg-red-100 text-red-700`;
+  if (status === 'PASS' || status === 'APPROVED') return `${base} bg-emerald-100 text-emerald-700`;
+  if (status === 'NEED_MANUAL') return `${base} bg-amber-100 text-amber-700`;
   return `${base} bg-zinc-100 text-zinc-700`;
 }
 
@@ -63,60 +64,63 @@ export default function ReviewDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [acting, setActing] = useState(false);
-  const [note, setNote] = useState("");
+  const [note, setNote] = useState('');
 
-  const load = useMemo(() => async () => {
-    if (!id) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const d = await apiFetch<DetailResponse>(`/admin/submissions/${id}`);
-      setData(d);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "加载失败";
-      setError(msg);
-      if (msg.includes("401")) {
-        clearTokens();
-        router.push("/login");
+  const load = useMemo(
+    () => async () => {
+      if (!id) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const d = await apiFetch<DetailResponse>(`/admin/submissions/${id}`);
+        setData(d);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : '加载失败';
+        setError(msg);
+        if (msg.includes('401')) {
+          clearTokens();
+          router.push('/login');
+        }
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  }, [id, router]);
+    },
+    [id, router],
+  );
 
   useEffect(() => {
     load();
   }, [load]);
 
-  async function decision(decision: "APPROVE" | "NEED_FIX" | "REJECT") {
+  async function decision(decision: 'APPROVE' | 'NEED_FIX' | 'REJECT') {
     if (!id) return;
     setActing(true);
     setError(null);
     try {
       await apiFetch(`/admin/submissions/${id}/decision`, {
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify({ decision, note: note || undefined }),
       });
       await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "操作失败");
+      setError(e instanceof Error ? e.message : '操作失败');
     } finally {
       setActing(false);
     }
   }
 
-  async function rerun(types: Array<"ANONYMITY" | "CONTENT">) {
+  async function rerun(types: Array<'ANONYMITY' | 'CONTENT'>) {
     if (!id) return;
     setActing(true);
     setError(null);
     try {
       await apiFetch(`/admin/submissions/${id}/rerun`, {
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify({ types }),
       });
       await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "重跑失败");
+      setError(e instanceof Error ? e.message : '重跑失败');
     } finally {
       setActing(false);
     }
@@ -126,10 +130,12 @@ export default function ReviewDetailPage() {
     setActing(true);
     setError(null);
     try {
-      await apiFetch(`/admin/submissions/${id}/${enabled ? "publicize" : "unpublicize"}`, { method: "POST" });
+      await apiFetch(`/admin/submissions/${id}/${enabled ? 'publicize' : 'unpublicize'}`, {
+        method: 'POST',
+      });
       await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "操作失败");
+      setError(e instanceof Error ? e.message : '操作失败');
     } finally {
       setActing(false);
     }
@@ -158,10 +164,16 @@ export default function ReviewDetailPage() {
                   <div>
                     <div className="text-zinc-900 font-semibold">{data.title}</div>
                     <div className="mt-1 flex flex-wrap gap-2">
-                      <span className={statusBadge(data.category)}>{labelCategory(data.category)}</span>
-                      <span className={statusBadge(data.status)}>{labelSubmissionStatus(data.status)}</span>
+                      <span className={statusBadge(data.category)}>
+                        {labelCategory(data.category)}
+                      </span>
+                      <span className={statusBadge(data.status)}>
+                        {labelSubmissionStatus(data.status)}
+                      </span>
                       {data.latestReview ? (
-                        <span className={statusBadge(data.latestReview.summary)}>{labelReviewSummary(data.latestReview.summary)}</span>
+                        <span className={statusBadge(data.latestReview.summary)}>
+                          {labelReviewSummary(data.latestReview.summary)}
+                        </span>
                       ) : null}
                     </div>
                   </div>
@@ -169,25 +181,25 @@ export default function ReviewDetailPage() {
                     <button
                       className="rounded-md bg-zinc-900 text-white px-3 py-2 text-sm disabled:opacity-60"
                       disabled={acting}
-                      onClick={() => decision("APPROVE")}
+                      onClick={() => decision('APPROVE')}
                     >
                       通过
                     </button>
                     <button
                       className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm disabled:opacity-60"
                       disabled={acting}
-                      onClick={() => decision("NEED_FIX")}
+                      onClick={() => decision('NEED_FIX')}
                     >
                       退回修改
                     </button>
                     <button
                       className="rounded-md border border-red-300 bg-white text-red-700 px-3 py-2 text-sm disabled:opacity-60"
                       disabled={acting}
-                      onClick={() => decision("REJECT")}
+                      onClick={() => decision('REJECT')}
                     >
                       拒绝
                     </button>
-                    {data.status === "PUBLICIZED" ? (
+                    {data.status === 'PUBLICIZED' ? (
                       <button
                         className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm disabled:opacity-60"
                         disabled={acting}
@@ -213,11 +225,13 @@ export default function ReviewDetailPage() {
                     <div className="mt-2 space-y-2 text-zinc-700">
                       <div>
                         <div className="text-xs text-zinc-500">简介</div>
-                        <div className="whitespace-pre-wrap break-words">{data.intro ?? "-"}</div>
+                        <div className="whitespace-pre-wrap break-words">{data.intro ?? '-'}</div>
                       </div>
                       <div>
                         <div className="text-xs text-zinc-500">AI 工具说明</div>
-                        <div className="whitespace-pre-wrap break-words">{data.aiToolsUsage ?? "-"}</div>
+                        <div className="whitespace-pre-wrap break-words">
+                          {data.aiToolsUsage ?? '-'}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -230,11 +244,13 @@ export default function ReviewDetailPage() {
                           <div key={a.id} className="flex items-center justify-between gap-2">
                             <div className="truncate">
                               <div className="text-xs text-zinc-500">
-                                {a.kind} · {a.mimeType ?? "-"}
+                                {a.kind} · {a.mimeType ?? '-'}
                               </div>
                               <div className="truncate">{a.originalName}</div>
                             </div>
-                            <div className="text-xs text-zinc-500">{Math.round(a.byteSize / 1024)} KB</div>
+                            <div className="text-xs text-zinc-500">
+                              {Math.round(a.byteSize / 1024)} KB
+                            </div>
                           </div>
                         ))
                       ) : (
@@ -251,21 +267,21 @@ export default function ReviewDetailPage() {
                       <button
                         className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm disabled:opacity-60"
                         disabled={acting}
-                        onClick={() => rerun(["ANONYMITY"])}
+                        onClick={() => rerun(['ANONYMITY'])}
                       >
                         重跑匿名
                       </button>
                       <button
                         className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm disabled:opacity-60"
                         disabled={acting}
-                        onClick={() => rerun(["CONTENT"])}
+                        onClick={() => rerun(['CONTENT'])}
                       >
                         重跑内容
                       </button>
                       <button
                         className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm disabled:opacity-60"
                         disabled={acting}
-                        onClick={() => rerun(["ANONYMITY", "CONTENT"])}
+                        onClick={() => rerun(['ANONYMITY', 'CONTENT'])}
                       >
                         重跑匿名+内容
                       </button>
@@ -291,8 +307,12 @@ export default function ReviewDetailPage() {
                         <div key={t.id} className="rounded-md border border-zinc-200 p-3">
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <div className="flex items-center gap-2">
-                              <span className={statusBadge(t.type)}>{labelReviewTaskType(t.type)}</span>
-                              <span className={statusBadge(t.status)}>{labelReviewTaskStatus(t.status)}</span>
+                              <span className={statusBadge(t.type)}>
+                                {labelReviewTaskType(t.type)}
+                              </span>
+                              <span className={statusBadge(t.status)}>
+                                {labelReviewTaskStatus(t.status)}
+                              </span>
                             </div>
                           </div>
                           <pre className="mt-2 whitespace-pre-wrap break-words text-xs text-zinc-700 bg-zinc-50 border border-zinc-200 rounded-md p-2">

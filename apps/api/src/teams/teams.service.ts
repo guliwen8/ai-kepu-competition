@@ -1,4 +1,9 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -19,7 +24,12 @@ export class TeamsService {
     return team;
   }
 
-  async addMember(ownerId: string, teamId: string, phone: string, role?: string) {
+  async addMember(
+    ownerId: string,
+    teamId: string,
+    phone: string,
+    role?: string,
+  ) {
     const team = await this.prisma.team.findUnique({
       where: { id: teamId },
       include: { members: true },
@@ -57,4 +67,3 @@ export class TeamsService {
     return teams;
   }
 }
-

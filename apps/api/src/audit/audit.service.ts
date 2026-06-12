@@ -3,8 +3,19 @@ import { PrismaService } from '../prisma/prisma.service';
 import { getRequestContext } from '../request-context';
 
 function csvEscape(v: unknown) {
-  const s = String(v ?? '');
-  if (s.includes('"') || s.includes(',') || s.includes('\n')) return `"${s.replaceAll('"', '""')}"`;
+  let s = '';
+  if (v == null) s = '';
+  else if (typeof v === 'string') s = v;
+  else if (
+    typeof v === 'number' ||
+    typeof v === 'boolean' ||
+    typeof v === 'bigint'
+  )
+    s = String(v);
+  else if (v instanceof Date) s = v.toISOString();
+  else s = JSON.stringify(v);
+  if (s.includes('"') || s.includes(',') || s.includes('\n'))
+    return `"${s.replaceAll('"', '""')}"`;
   return s;
 }
 
@@ -59,8 +70,14 @@ export class AuditService {
     if (args.resourceType) where.resourceType = args.resourceType;
     if (args.resourceId) where.resourceId = args.resourceId;
     if (args.actorUserId) where.actorUserId = args.actorUserId;
-    if (typeof args.sinceMinutes === 'number' && Number.isFinite(args.sinceMinutes) && args.sinceMinutes > 0) {
-      where.createdAt = { gte: new Date(Date.now() - Math.floor(args.sinceMinutes) * 60 * 1000) };
+    if (
+      typeof args.sinceMinutes === 'number' &&
+      Number.isFinite(args.sinceMinutes) &&
+      args.sinceMinutes > 0
+    ) {
+      where.createdAt = {
+        gte: new Date(Date.now() - Math.floor(args.sinceMinutes) * 60 * 1000),
+      };
     }
     const [total, rows] = await Promise.all([
       this.prisma.auditLog.count({ where }),
@@ -74,14 +91,26 @@ export class AuditService {
     return { total, page, pageSize, items: rows };
   }
 
-  async exportCsv(args: { action?: string; resourceType?: string; resourceId?: string; actorUserId?: string; sinceMinutes?: number }) {
+  async exportCsv(args: {
+    action?: string;
+    resourceType?: string;
+    resourceId?: string;
+    actorUserId?: string;
+    sinceMinutes?: number;
+  }) {
     const where: any = {};
     if (args.action) where.action = args.action;
     if (args.resourceType) where.resourceType = args.resourceType;
     if (args.resourceId) where.resourceId = args.resourceId;
     if (args.actorUserId) where.actorUserId = args.actorUserId;
-    if (typeof args.sinceMinutes === 'number' && Number.isFinite(args.sinceMinutes) && args.sinceMinutes > 0) {
-      where.createdAt = { gte: new Date(Date.now() - Math.floor(args.sinceMinutes) * 60 * 1000) };
+    if (
+      typeof args.sinceMinutes === 'number' &&
+      Number.isFinite(args.sinceMinutes) &&
+      args.sinceMinutes > 0
+    ) {
+      where.createdAt = {
+        gte: new Date(Date.now() - Math.floor(args.sinceMinutes) * 60 * 1000),
+      };
     }
 
     const rows = await this.prisma.auditLog.findMany({
@@ -90,7 +119,18 @@ export class AuditService {
       take: 5000,
     });
 
-    const header = ['createdAt', 'actorUserId', 'actorRoles', 'action', 'resourceType', 'resourceId', 'success', 'ip', 'userAgent', 'requestId'];
+    const header = [
+      'createdAt',
+      'actorUserId',
+      'actorRoles',
+      'action',
+      'resourceType',
+      'resourceId',
+      'success',
+      'ip',
+      'userAgent',
+      'requestId',
+    ];
     const lines = [header.join(',')];
     for (const r of rows) {
       lines.push(

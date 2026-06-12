@@ -54,7 +54,10 @@ export class AuditController {
       sinceMinutes: sinceMinutes ? Number(sinceMinutes) : undefined,
     });
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="audit_logs.csv"`);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="audit_logs.csv"`,
+    );
     await this.auditService.write({
       actorUserId: req.user?.userId,
       actorRoles: req.user?.roles,

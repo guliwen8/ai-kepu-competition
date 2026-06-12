@@ -4,14 +4,14 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "回滚目标环境"
+        description: '回滚目标环境'
         required: true
         type: choice
         options:
           - staging
           - production
       tag:
-        description: "要回滚到的 Release tag（例如 v1.2.3）"
+        description: '要回滚到的 Release tag（例如 v1.2.3）'
         required: true
         type: string
 

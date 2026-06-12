@@ -10,4 +10,3 @@ import { JudgingService } from './judging.service';
   providers: [JudgingService],
 })
 export class JudgingModule {}
-

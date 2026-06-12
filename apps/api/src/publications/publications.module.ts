@@ -10,4 +10,3 @@ import { PublicationsService } from './publications.service';
   providers: [PublicationsService],
 })
 export class PublicationsModule {}
-

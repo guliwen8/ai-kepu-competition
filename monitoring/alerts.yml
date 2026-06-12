@@ -7,7 +7,7 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "API is down"
+          summary: 'API is down'
 
       - alert: ApiHigh5xx
         expr: sum(rate(api_requests_5xx_total[5m])) > 0
@@ -15,7 +15,7 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "API has 5xx errors"
+          summary: 'API has 5xx errors'
 
       - alert: ApiHighLatencyAvgMs
         expr: (sum(rate(api_request_duration_ms_sum[5m])) / sum(rate(api_request_duration_ms_count[5m]))) > 1000
@@ -23,7 +23,7 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "API average latency > 1s"
+          summary: 'API average latency > 1s'
 
       - alert: ApiDbHighLatencyAvgMs
         expr: (sum(rate(api_db_query_duration_ms_sum[5m])) / sum(rate(api_db_query_duration_ms_count[5m]))) > 200
@@ -31,7 +31,7 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "DB average query latency > 200ms"
+          summary: 'DB average query latency > 200ms'
 
       - alert: ApiDbSlowQueries
         expr: sum(rate(api_db_slow_queries_total[5m])) > 0
@@ -39,4 +39,4 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "DB has slow queries (>=500ms)"
+          summary: 'DB has slow queries (>=500ms)'

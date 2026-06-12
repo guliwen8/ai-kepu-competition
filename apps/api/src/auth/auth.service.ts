@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcryptjs';
@@ -55,9 +59,11 @@ export class AuthService {
       { secret: this.refreshSecret(), expiresIn: '30d' },
     );
 
-    const decoded = this.jwtService.decode(refreshToken) as { exp?: number } | null;
+    const decoded = this.jwtService.decode(refreshToken);
     const expiresAt =
-      decoded?.exp != null ? new Date(decoded.exp * 1000) : new Date(Date.now() + 30 * 86400_000);
+      decoded?.exp != null
+        ? new Date(decoded.exp * 1000)
+        : new Date(Date.now() + 30 * 86400_000);
 
     const tokenHash = await bcrypt.hash(refreshToken, 10);
     await this.prisma.refreshToken.create({
@@ -77,14 +83,18 @@ export class AuthService {
     }
 
     if (dto.username) {
-      const exists = await this.prisma.user.findUnique({ where: { username: dto.username } });
+      const exists = await this.prisma.user.findUnique({
+        where: { username: dto.username },
+      });
       if (exists) {
         throw new BadRequestException('username 已存在');
       }
     }
 
     if (dto.phone) {
-      const exists = await this.prisma.user.findUnique({ where: { phone: dto.phone } });
+      const exists = await this.prisma.user.findUnique({
+        where: { phone: dto.phone },
+      });
       if (exists) {
         throw new BadRequestException('phone 已存在');
       }
@@ -109,7 +119,9 @@ export class AuthService {
 
   async loginPassword(dto: LoginPasswordDto): Promise<Tokens> {
     const user =
-      (await this.prisma.user.findUnique({ where: { username: dto.identity } })) ??
+      (await this.prisma.user.findUnique({
+        where: { username: dto.identity },
+      })) ??
       (await this.prisma.user.findUnique({ where: { email: dto.identity } })) ??
       (await this.prisma.user.findUnique({ where: { phone: dto.identity } }));
 
@@ -149,9 +161,12 @@ export class AuthService {
   async refresh(refreshToken: string): Promise<Tokens> {
     let payload: { sub: string };
     try {
-      payload = await this.jwtService.verifyAsync<{ sub: string }>(refreshToken, {
-        secret: this.refreshSecret(),
-      });
+      payload = await this.jwtService.verifyAsync<{ sub: string }>(
+        refreshToken,
+        {
+          secret: this.refreshSecret(),
+        },
+      );
     } catch {
       throw new UnauthorizedException('refresh token 无效');
     }
@@ -180,7 +195,14 @@ export class AuthService {
   async me(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, phone: true, email: true, username: true, status: true, createdAt: true },
+      select: {
+        id: true,
+        phone: true,
+        email: true,
+        username: true,
+        status: true,
+        createdAt: true,
+      },
     });
     if (!user) {
       throw new UnauthorizedException();

@@ -15,4 +15,3 @@ export class AdminDecisionDto {
   @MaxLength(500)
   note?: string;
 }
-

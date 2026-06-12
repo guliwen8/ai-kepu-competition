@@ -2,7 +2,13 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
-type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue };
+type JsonValue =
+  | null
+  | boolean
+  | number
+  | string
+  | JsonValue[]
+  | { [key: string]: JsonValue };
 
 function loadEnv(): Record<string, string> {
   let dir = process.cwd();
@@ -18,7 +24,10 @@ function loadEnv(): Record<string, string> {
         if (idx <= 0) continue;
         const key = line.slice(0, idx).trim();
         let value = line.slice(idx + 1).trim();
-        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        if (
+          (value.startsWith('"') && value.endsWith('"')) ||
+          (value.startsWith("'") && value.endsWith("'"))
+        ) {
           value = value.slice(1, -1);
         }
         out[key] = value;
@@ -84,7 +93,12 @@ async function requestMultipart<T extends JsonValue>(args: {
   return readJson<T>(res);
 }
 
-async function requestText(args: { baseUrl: string; path: string; method: string; token?: string }) {
+async function requestText(args: {
+  baseUrl: string;
+  path: string;
+  method: string;
+  token?: string;
+}) {
   const res = await fetch(`${args.baseUrl}${args.path}`, {
     method: args.method,
     headers: {
@@ -105,15 +119,22 @@ function isoOffset(ms: number) {
 async function main() {
   const baseUrl = process.env.API_BASE_URL ?? 'http://localhost:3001';
   const env = loadEnv();
-  const bootstrapToken = process.env.ADMIN_BOOTSTRAP_TOKEN ?? env.ADMIN_BOOTSTRAP_TOKEN ?? '';
+  const bootstrapToken =
+    process.env.ADMIN_BOOTSTRAP_TOKEN ?? env.ADMIN_BOOTSTRAP_TOKEN ?? '';
 
   const adminPhone = process.env.SMOKE_PHONE ?? '13957512889';
   const code = process.env.SMOKE_CODE ?? '000000';
-  const judgePhone1 = process.env.JUDGE_PHONE ?? `139${String(Date.now()).slice(-8)}`;
-  const judgePhone2 = process.env.JUDGE_PHONE_2 ?? `137${String(Date.now()).slice(-8)}`;
-  const participantPhone = process.env.PARTICIPANT_PHONE ?? `138${String(Date.now()).slice(-8)}`;
+  const judgePhone1 =
+    process.env.JUDGE_PHONE ?? `139${String(Date.now()).slice(-8)}`;
+  const judgePhone2 =
+    process.env.JUDGE_PHONE_2 ?? `137${String(Date.now()).slice(-8)}`;
+  const participantPhone =
+    process.env.PARTICIPANT_PHONE ?? `138${String(Date.now()).slice(-8)}`;
 
-  const login1 = await requestJson<{ accessToken: string; refreshToken: string }>({
+  const login1 = await requestJson<{
+    accessToken: string;
+    refreshToken: string;
+  }>({
     baseUrl,
     path: '/auth/login/sms',
     method: 'POST',
@@ -130,7 +151,10 @@ async function main() {
     });
   }
 
-  const adminLogin = await requestJson<{ accessToken: string; refreshToken: string }>({
+  const adminLogin = await requestJson<{
+    accessToken: string;
+    refreshToken: string;
+  }>({
     baseUrl,
     path: '/auth/login/sms',
     method: 'POST',
@@ -144,7 +168,9 @@ async function main() {
     token: adminLogin.accessToken,
   });
   if (!adminMe.roles.includes('admin')) {
-    throw new Error('当前 SMOKE_PHONE 用户不是 admin，请先在后台授予 admin 或提供可用的 ADMIN_BOOTSTRAP_TOKEN');
+    throw new Error(
+      '当前 SMOKE_PHONE 用户不是 admin，请先在后台授予 admin 或提供可用的 ADMIN_BOOTSTRAP_TOKEN',
+    );
   }
 
   await requestJson<{ accessToken: string; refreshToken: string }>({
@@ -175,13 +201,19 @@ async function main() {
     body: { phone: judgePhone2, realName: '评委B', orgName: '本地测试' },
   });
 
-  const judgeLogin1 = await requestJson<{ accessToken: string; refreshToken: string }>({
+  const judgeLogin1 = await requestJson<{
+    accessToken: string;
+    refreshToken: string;
+  }>({
     baseUrl,
     path: '/auth/login/sms',
     method: 'POST',
     body: { phone: judgePhone1, code },
   });
-  const judgeLogin2 = await requestJson<{ accessToken: string; refreshToken: string }>({
+  const judgeLogin2 = await requestJson<{
+    accessToken: string;
+    refreshToken: string;
+  }>({
     baseUrl,
     path: '/auth/login/sms',
     method: 'POST',
@@ -225,7 +257,10 @@ async function main() {
         path: '/admin/competitions',
         method: 'POST',
         token: adminLogin.accessToken,
-        body: { title: `ranking-smoke-${randomUUID().slice(0, 8)}`, ...openWindows },
+        body: {
+          title: `ranking-smoke-${randomUUID().slice(0, 8)}`,
+          ...openWindows,
+        },
       })
     ).id;
 
@@ -246,7 +281,10 @@ async function main() {
     body: openWindows,
   });
 
-  const participantLogin = await requestJson<{ accessToken: string; refreshToken: string }>({
+  const participantLogin = await requestJson<{
+    accessToken: string;
+    refreshToken: string;
+  }>({
     baseUrl,
     path: '/auth/login/sms',
     method: 'POST',
@@ -285,9 +323,15 @@ async function main() {
     return created.id;
   }
 
-  const submissionA = await createSubmission(`ranking-A-${randomUUID().slice(0, 8)}`);
-  const submissionB = await createSubmission(`ranking-B-${randomUUID().slice(0, 8)}`);
-  const submissionC = await createSubmission(`ranking-C-${randomUUID().slice(0, 8)}`);
+  const submissionA = await createSubmission(
+    `ranking-A-${randomUUID().slice(0, 8)}`,
+  );
+  const submissionB = await createSubmission(
+    `ranking-B-${randomUUID().slice(0, 8)}`,
+  );
+  const submissionC = await createSubmission(
+    `ranking-C-${randomUUID().slice(0, 8)}`,
+  );
 
   const assign = await requestJson<{ createdCount: number; skipped: any[] }>({
     baseUrl,
@@ -330,9 +374,14 @@ async function main() {
   const b2 = findAssignmentId(tasks2, submissionB);
   const c2 = findAssignmentId(tasks2, submissionC);
 
-  if (!a1 || !b1 || !c1 || !a2 || !b2 || !c2) throw new Error('评委侧未查询到完整分配任务');
+  if (!a1 || !b1 || !c1 || !a2 || !b2 || !c2)
+    throw new Error('评委侧未查询到完整分配任务');
 
-  async function scoreAndSubmit(token: string, assignmentId: string, s: { s1: number; s2: number; s3: number; s4: number; s5: number }) {
+  async function scoreAndSubmit(
+    token: string,
+    assignmentId: string,
+    s: { s1: number; s2: number; s3: number; s4: number; s5: number },
+  ) {
     await requestJson<JsonValue>({
       baseUrl,
       path: `/judge/judging/assignments/${assignmentId}/score`,
@@ -348,19 +397,56 @@ async function main() {
     });
   }
 
-  await scoreAndSubmit(judgeLogin1.accessToken, a1, { s1: 10, s2: 10, s3: 10, s4: 10, s5: 10 });
-  await scoreAndSubmit(judgeLogin2.accessToken, a2, { s1: 10, s2: 10, s3: 10, s4: 10, s5: 10 });
+  await scoreAndSubmit(judgeLogin1.accessToken, a1, {
+    s1: 10,
+    s2: 10,
+    s3: 10,
+    s4: 10,
+    s5: 10,
+  });
+  await scoreAndSubmit(judgeLogin2.accessToken, a2, {
+    s1: 10,
+    s2: 10,
+    s3: 10,
+    s4: 10,
+    s5: 10,
+  });
 
-  await scoreAndSubmit(judgeLogin1.accessToken, b1, { s1: 8, s2: 8, s3: 8, s4: 8, s5: 8 });
-  await scoreAndSubmit(judgeLogin2.accessToken, b2, { s1: 8, s2: 8, s3: 8, s4: 8, s5: 8 });
+  await scoreAndSubmit(judgeLogin1.accessToken, b1, {
+    s1: 8,
+    s2: 8,
+    s3: 8,
+    s4: 8,
+    s5: 8,
+  });
+  await scoreAndSubmit(judgeLogin2.accessToken, b2, {
+    s1: 8,
+    s2: 8,
+    s3: 8,
+    s4: 8,
+    s5: 8,
+  });
 
-  await scoreAndSubmit(judgeLogin1.accessToken, c1, { s1: 10, s2: 10, s3: 10, s4: 10, s5: 10 });
+  await scoreAndSubmit(judgeLogin1.accessToken, c1, {
+    s1: 10,
+    s2: 10,
+    s3: 10,
+    s4: 10,
+    s5: 10,
+  });
   await requestJson<JsonValue>({
     baseUrl,
     path: `/judge/judging/assignments/${c2}/score`,
     method: 'PUT',
     token: judgeLogin2.accessToken,
-    body: { s1: 10, s2: 10, s3: 10, s4: 10, s5: 10, comment: 'ranking smoke (not submitted)' },
+    body: {
+      s1: 10,
+      s2: 10,
+      s3: 10,
+      s4: 10,
+      s5: 10,
+      comment: 'ranking smoke (not submitted)',
+    },
   });
 
   for (const id of [submissionA, submissionB, submissionC]) {
@@ -386,27 +472,47 @@ async function main() {
   });
   const items = Array.isArray(lb.items) ? lb.items : [];
 
-  if (items.length < 3) throw new Error(`leaderboard items expected >= 3, got ${items.length}`);
+  if (items.length < 3)
+    throw new Error(`leaderboard items expected >= 3, got ${items.length}`);
 
   const idToRank = new Map(items.map((x: any) => [x.submissionId, x.rank]));
   const rA = idToRank.get(submissionA);
   const rB = idToRank.get(submissionB);
   const rC = idToRank.get(submissionC);
-  if (!rA || !rB || !rC) throw new Error('leaderboard missing expected submissions');
-  if (!(rA < rC && rC < rB)) throw new Error(`unexpected ranking order: A=${rA} C=${rC} B=${rB}`);
+  if (!rA || !rB || !rC)
+    throw new Error('leaderboard missing expected submissions');
+  if (!(rA < rC && rC < rB))
+    throw new Error(`unexpected ranking order: A=${rA} C=${rC} B=${rB}`);
 
   for (let i = 1; i < items.length; i += 1) {
     const a = items[i - 1];
     const b = items[i];
-    if (a.score.avgTotal < b.score.avgTotal) throw new Error('leaderboard not sorted by avgTotal desc');
-    if (a.score.avgTotal === b.score.avgTotal && a.score.scoreCount < b.score.scoreCount) {
-      throw new Error('leaderboard not sorted by scoreCount desc when avgTotal ties');
+    if (a.score.avgTotal < b.score.avgTotal)
+      throw new Error('leaderboard not sorted by avgTotal desc');
+    if (
+      a.score.avgTotal === b.score.avgTotal &&
+      a.score.scoreCount < b.score.scoreCount
+    ) {
+      throw new Error(
+        'leaderboard not sorted by scoreCount desc when avgTotal ties',
+      );
     }
   }
 
   const blob = JSON.stringify(lb);
-  for (const k of ['ownerId', 'members', 'phone', 'username', 'realName', 'teacherName', 'teacherContact', 'originalName', 'storedPath']) {
-    if (blob.includes(`"${k}"`)) throw new Error(`public leaderboard leaks sensitive field: ${k}`);
+  for (const k of [
+    'ownerId',
+    'members',
+    'phone',
+    'username',
+    'realName',
+    'teacherName',
+    'teacherContact',
+    'originalName',
+    'storedPath',
+  ]) {
+    if (blob.includes(`"${k}"`))
+      throw new Error(`public leaderboard leaks sensitive field: ${k}`);
   }
 
   const detail = await requestJson<any>({
@@ -415,8 +521,15 @@ async function main() {
     method: 'GET',
   });
   const detailBlob = JSON.stringify(detail);
-  for (const k of ['originalName', 'storedPath', 'ownerId', 'teacherName', 'teacherContact']) {
-    if (detailBlob.includes(`"${k}"`)) throw new Error(`public submission detail leaks sensitive field: ${k}`);
+  for (const k of [
+    'originalName',
+    'storedPath',
+    'ownerId',
+    'teacherName',
+    'teacherContact',
+  ]) {
+    if (detailBlob.includes(`"${k}"`))
+      throw new Error(`public submission detail leaks sensitive field: ${k}`);
   }
 
   const audit = await requestJson<any>({

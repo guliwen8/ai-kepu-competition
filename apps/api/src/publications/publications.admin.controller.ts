@@ -42,15 +42,24 @@ export class PublicationsAdminController {
     @Query('competitionId') competitionId?: string,
     @Query('category') category?: SubmissionCategory,
   ) {
-    const csv = await this.publicationsService.adminExportLeaderboardCsv({ competitionId, category });
+    const csv = await this.publicationsService.adminExportLeaderboardCsv({
+      competitionId,
+      category,
+    });
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="public_leaderboard.csv"`);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="public_leaderboard.csv"`,
+    );
     await this.auditService.write({
       actorUserId: req.user?.userId,
       actorRoles: req.user?.roles,
       action: 'ADMIN_PUBLICATION_EXPORT',
       resourceType: 'Publication',
-      after: { competitionId: competitionId ?? null, category: category ?? null },
+      after: {
+        competitionId: competitionId ?? null,
+        category: category ?? null,
+      },
       ip: req.ip,
       userAgent: req.headers?.['user-agent'],
     });

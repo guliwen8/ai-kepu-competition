@@ -9,4 +9,3 @@ export class AddMemberDto {
   @IsString()
   role?: string;
 }
-

@@ -29,7 +29,10 @@ import { OpsModule } from './ops/ops.module';
           resolve(process.cwd(), '../.env'),
           resolve(process.cwd(), '.env'),
         ];
-        return candidates.find((p) => existsSync(p)) ?? candidates[candidates.length - 1];
+        return (
+          candidates.find((p) => existsSync(p)) ??
+          candidates[candidates.length - 1]
+        );
       })(),
     }),
     AdminModule,

@@ -9,4 +9,3 @@ export class LoginSmsDto {
   @Length(4, 8)
   code!: string;
 }
-

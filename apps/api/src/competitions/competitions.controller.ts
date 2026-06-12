@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -51,7 +60,11 @@ export class CompetitionsController {
   }
 
   @Put(':id')
-  async update(@Req() req: any, @Param('id') id: string, @Body() dto: UpdateCompetitionDto) {
+  async update(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() dto: UpdateCompetitionDto,
+  ) {
     const r = await this.competitionsService.update(id, dto);
     await this.auditService.write({
       actorUserId: req.user?.userId,

@@ -1,14 +1,17 @@
 # GitHub Environments / Secrets 模板
 
 ## 1. Environments
+
 - `staging`
 - `production`
 
 建议：
+
 - `production` 开启 Required reviewers
 - `main` 分支开启 required status checks
 
 ## 2. Staging Secrets
+
 - `STAGING_SSH_HOST`
 - `STAGING_SSH_USER`
 - `STAGING_SSH_KEY`
@@ -19,6 +22,7 @@
 - `STAGING_ROLLBACK_COMMAND`，可选，自定义覆盖标准回滚
 
 ## 3. Production Secrets
+
 - `PROD_SSH_HOST`
 - `PROD_SSH_USER`
 - `PROD_SSH_KEY`
@@ -29,6 +33,7 @@
 - `PROD_ROLLBACK_COMMAND`，可选，自定义覆盖标准回滚
 
 ## 4. 服务器目录约定
+
 - `${DEPLOY_PATH}/<tag-or-sha>/`
 - `${DEPLOY_PATH}/current`
 - `${DEPLOY_PATH}/hooks/before-deploy.sh`
@@ -37,6 +42,7 @@
 - `${DEPLOY_PATH}/hooks/after-rollback.sh`
 
 ## 5. 推荐最小配置
+
 - staging：
   - `STAGING_SSH_HOST`
   - `STAGING_SSH_USER`
@@ -49,6 +55,7 @@
   - `PROD_API_BASE_URL`
 
 ## 6. Branch Protection 建议
+
 - 保护分支：`main`
 - 必需 checks：
   - `checks`
@@ -56,4 +63,3 @@
 - 建议：
   - Require pull request reviews
   - Require branches to be up to date before merging
-

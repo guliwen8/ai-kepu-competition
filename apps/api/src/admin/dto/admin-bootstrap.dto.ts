@@ -5,4 +5,3 @@ export class AdminBootstrapDto {
   @Length(6, 200)
   token!: string;
 }
-

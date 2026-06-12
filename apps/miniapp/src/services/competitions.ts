@@ -18,4 +18,3 @@ export type Competition = {
 export async function getCurrentCompetition() {
   return http<Competition | null>('/competitions/current');
 }
-

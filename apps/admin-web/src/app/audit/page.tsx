@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { apiFetch } from "@/lib/api";
+import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
+import { apiFetch } from '@/lib/api';
 
 type AuditItem = {
   id: string;
@@ -21,56 +21,65 @@ type AuditItem = {
 type Resp = { total: number; page: number; pageSize: number; items: AuditItem[] };
 
 export default function AuditPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
-  const [action, setAction] = useState("");
-  const [resourceType, setResourceType] = useState("");
-  const [resourceId, setResourceId] = useState("");
-  const [actorUserId, setActorUserId] = useState("");
-  const [sinceMinutes, setSinceMinutes] = useState("1440");
+  const [action, setAction] = useState('');
+  const [resourceType, setResourceType] = useState('');
+  const [resourceId, setResourceId] = useState('');
+  const [actorUserId, setActorUserId] = useState('');
+  const [sinceMinutes, setSinceMinutes] = useState('1440');
   const [data, setData] = useState<Resp | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const actionOptions = useMemo(
     () => [
-      "ADMIN_COMPETITION_CREATE",
-      "ADMIN_COMPETITION_UPDATE",
-      "ADMIN_COMPETITION_SET_CURRENT",
-      "ADMIN_JUDGE_GRANT",
-      "ADMIN_JUDGING_ASSIGN_BATCH",
-      "ADMIN_JUDGING_REVOKE",
-      "ADMIN_JUDGING_EXPORT",
-      "ADMIN_AUDIT_EXPORT",
-      "PARTICIPANT_SUBMISSION_CREATE_DRAFT",
-      "PARTICIPANT_SUBMISSION_UPDATE_DRAFT",
-      "PARTICIPANT_SUBMISSION_UPLOAD_ATTACHMENT",
-      "PARTICIPANT_SUBMISSION_SUBMIT",
-      "PARTICIPANT_TEAM_CREATE",
-      "PARTICIPANT_TEAM_ADD_MEMBER",
-      "AUTH_REGISTER",
-      "AUTH_LOGIN_PASSWORD",
-      "AUTH_LOGIN_SMS",
-      "AUTH_REFRESH",
+      'ADMIN_COMPETITION_CREATE',
+      'ADMIN_COMPETITION_UPDATE',
+      'ADMIN_COMPETITION_SET_CURRENT',
+      'ADMIN_JUDGE_GRANT',
+      'ADMIN_JUDGING_ASSIGN_BATCH',
+      'ADMIN_JUDGING_REVOKE',
+      'ADMIN_JUDGING_EXPORT',
+      'ADMIN_AUDIT_EXPORT',
+      'PARTICIPANT_SUBMISSION_CREATE_DRAFT',
+      'PARTICIPANT_SUBMISSION_UPDATE_DRAFT',
+      'PARTICIPANT_SUBMISSION_UPLOAD_ATTACHMENT',
+      'PARTICIPANT_SUBMISSION_SUBMIT',
+      'PARTICIPANT_TEAM_CREATE',
+      'PARTICIPANT_TEAM_ADD_MEMBER',
+      'AUTH_REGISTER',
+      'AUTH_LOGIN_PASSWORD',
+      'AUTH_LOGIN_SMS',
+      'AUTH_REFRESH',
     ],
     [],
   );
   const resourceTypeOptions = useMemo(
-    () => ["Competition", "Judge", "JudgingAssignment", "JudgingExport", "Submission", "Team", "AuditLog", "User"],
+    () => [
+      'Competition',
+      'Judge',
+      'JudgingAssignment',
+      'JudgingExport',
+      'Submission',
+      'Team',
+      'AuditLog',
+      'User',
+    ],
     [],
   );
-  const sinceOptions = useMemo(() => ["60", "1440", "10080"], []);
+  const sinceOptions = useMemo(() => ['60', '1440', '10080'], []);
 
   const qs = useMemo(() => {
     const sp = new URLSearchParams();
-    sp.set("page", String(page));
-    sp.set("pageSize", String(pageSize));
-    if (action.trim()) sp.set("action", action.trim());
-    if (resourceType.trim()) sp.set("resourceType", resourceType.trim());
-    if (resourceId.trim()) sp.set("resourceId", resourceId.trim());
-    if (actorUserId.trim()) sp.set("actorUserId", actorUserId.trim());
-    if (sinceMinutes.trim()) sp.set("sinceMinutes", sinceMinutes.trim());
+    sp.set('page', String(page));
+    sp.set('pageSize', String(pageSize));
+    if (action.trim()) sp.set('action', action.trim());
+    if (resourceType.trim()) sp.set('resourceType', resourceType.trim());
+    if (resourceId.trim()) sp.set('resourceId', resourceId.trim());
+    if (actorUserId.trim()) sp.set('actorUserId', actorUserId.trim());
+    if (sinceMinutes.trim()) sp.set('sinceMinutes', sinceMinutes.trim());
     return sp.toString();
   }, [action, actorUserId, page, pageSize, resourceId, resourceType, sinceMinutes]);
 
@@ -87,7 +96,7 @@ export default function AuditPage() {
       })
       .catch((e) => {
         if (!mounted) return;
-        setError(e instanceof Error ? e.message : "加载失败");
+        setError(e instanceof Error ? e.message : '加载失败');
         setData(null);
       })
       .finally(() => {
@@ -177,7 +186,12 @@ export default function AuditPage() {
                 <option key={v} value={v} />
               ))}
             </datalist>
-            <a className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-center" href={exportUrl} target="_blank" rel="noreferrer">
+            <a
+              className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-center"
+              href={exportUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
               导出 CSV
             </a>
           </div>
@@ -203,7 +217,9 @@ export default function AuditPage() {
                 <tbody>
                   {data.items.map((it) => (
                     <tr key={it.id} className="border-b last:border-b-0">
-                      <td className="py-3 pr-4 text-zinc-700 whitespace-nowrap">{new Date(it.createdAt).toLocaleString()}</td>
+                      <td className="py-3 pr-4 text-zinc-700 whitespace-nowrap">
+                        {new Date(it.createdAt).toLocaleString()}
+                      </td>
                       <td className="py-3 pr-4 text-zinc-900">{it.action}</td>
                       <td className="py-3 pr-4 text-zinc-700">
                         {it.resourceType}
@@ -214,17 +230,17 @@ export default function AuditPage() {
                               type="button"
                               className="ml-1 text-zinc-700 hover:text-zinc-900 underline underline-offset-2"
                               title={it.resourceId}
-                              onClick={() => navigator.clipboard?.writeText(it.resourceId ?? "")}
+                              onClick={() => navigator.clipboard?.writeText(it.resourceId ?? '')}
                             >
                               {it.resourceId}
                             </button>
                           </>
                         ) : (
-                          ""
+                          ''
                         )}
                       </td>
-                      <td className="py-3 pr-4 text-zinc-700">{it.actorUserId ?? "-"}</td>
-                      <td className="py-3 pr-4 text-zinc-700">{it.success ? "true" : "false"}</td>
+                      <td className="py-3 pr-4 text-zinc-700">{it.actorUserId ?? '-'}</td>
+                      <td className="py-3 pr-4 text-zinc-700">{it.success ? 'true' : 'false'}</td>
                     </tr>
                   ))}
                   {data.items.length === 0 ? (

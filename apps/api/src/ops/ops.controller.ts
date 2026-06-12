@@ -39,4 +39,3 @@ export class OpsController {
     return this.metrics.renderProm();
   }
 }
-

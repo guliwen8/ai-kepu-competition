@@ -1,9 +1,14 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { apiFetch } from "@/lib/api";
-import { labelCategory, labelReviewSummary, labelReviewTaskStatus, labelReviewTaskType } from "@/lib/labels";
+import { useEffect, useMemo, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { apiFetch } from '@/lib/api';
+import {
+  labelCategory,
+  labelReviewSummary,
+  labelReviewTaskStatus,
+  labelReviewTaskType,
+} from '@/lib/labels';
 
 type Task = { id: string; type: string; status: string; findings?: any };
 
@@ -24,7 +29,7 @@ export default function JudgeTaskDetailPage() {
   const [s3, setS3] = useState(0);
   const [s4, setS4] = useState(0);
   const [s5, setS5] = useState(0);
-  const [comment, setComment] = useState("");
+  const [comment, setComment] = useState('');
 
   const locked = useMemo(() => Boolean(data?.lockedAt), [data?.lockedAt]);
 
@@ -41,10 +46,10 @@ export default function JudgeTaskDetailPage() {
         setS3(res.score.s3 ?? 0);
         setS4(res.score.s4 ?? 0);
         setS5(res.score.s5 ?? 0);
-        setComment(res.score.comment ?? "");
+        setComment(res.score.comment ?? '');
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "加载失败");
+      setError(e instanceof Error ? e.message : '加载失败');
     } finally {
       setLoading(false);
     }
@@ -60,12 +65,12 @@ export default function JudgeTaskDetailPage() {
     setError(null);
     try {
       await apiFetch(`/judge/judging/assignments/${id}/score`, {
-        method: "PUT",
+        method: 'PUT',
         body: JSON.stringify({ s1, s2, s3, s4, s5, comment }),
       });
       await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "保存失败");
+      setError(e instanceof Error ? e.message : '保存失败');
     } finally {
       setSaving(false);
     }
@@ -76,17 +81,17 @@ export default function JudgeTaskDetailPage() {
     setSubmitting(true);
     setError(null);
     try {
-      await apiFetch(`/judge/judging/assignments/${id}/submit`, { method: "POST" });
+      await apiFetch(`/judge/judging/assignments/${id}/submit`, { method: 'POST' });
       await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "提交失败");
+      setError(e instanceof Error ? e.message : '提交失败');
     } finally {
       setSubmitting(false);
     }
   }
 
   function back() {
-    router.push("/judge");
+    router.push('/judge');
   }
 
   const latestReview = data?.submission?.latestReview ?? null;
@@ -103,7 +108,10 @@ export default function JudgeTaskDetailPage() {
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold text-zinc-900">打分</h1>
-          <button className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm" onClick={back}>
+          <button
+            className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm"
+            onClick={back}
+          >
             返回列表
           </button>
         </div>
@@ -116,7 +124,7 @@ export default function JudgeTaskDetailPage() {
             <div className="space-y-4 text-sm">
               <div>
                 <div className="text-zinc-900 font-medium">
-                  {data.submission.blindCode ?? "-"} · {data.submission.title}
+                  {data.submission.blindCode ?? '-'} · {data.submission.title}
                 </div>
                 <div className="text-zinc-600">{labelCategory(data.submission.category)}</div>
               </div>
@@ -124,7 +132,9 @@ export default function JudgeTaskDetailPage() {
               {latestReview ? (
                 <div className="rounded-lg border border-zinc-200 p-3">
                   <div className="text-zinc-900 font-medium">合规审查摘要</div>
-                  <div className="mt-1 text-zinc-700">结论：{labelReviewSummary(latestReview.summary)}</div>
+                  <div className="mt-1 text-zinc-700">
+                    结论：{labelReviewSummary(latestReview.summary)}
+                  </div>
                   <div className="mt-2 space-y-1">
                     {tasks.map((t) => (
                       <div key={t.id} className="text-zinc-700">
@@ -199,14 +209,14 @@ export default function JudgeTaskDetailPage() {
                   onClick={save}
                   disabled={saving || locked}
                 >
-                  {saving ? "保存中..." : "保存草稿"}
+                  {saving ? '保存中...' : '保存草稿'}
                 </button>
                 <button
                   className="rounded-md bg-zinc-900 text-white px-3 py-2 text-sm disabled:opacity-60"
                   onClick={submit}
                   disabled={submitting || locked}
                 >
-                  {locked ? "已提交锁定" : submitting ? "提交中..." : "最终提交"}
+                  {locked ? '已提交锁定' : submitting ? '提交中...' : '最终提交'}
                 </button>
                 {data?.score ? (
                   <div className="text-sm text-zinc-700 flex items-center">

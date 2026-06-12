@@ -28,14 +28,16 @@ export class AuthController {
   private async safeAuditWrite(args: Parameters<AuditService['write']>[0]) {
     try {
       await this.auditService.write(args);
-    } catch {}
+    } catch {
+      return;
+    }
   }
 
   @Post('register')
   async register(@Req() req: any, @Body() dto: RegisterDto) {
     try {
       const tokens = await this.authService.register(dto);
-      const payload = this.jwtService.decode(tokens.accessToken) as any;
+      const payload = this.jwtService.decode(tokens.accessToken);
       const userId = typeof payload?.sub === 'string' ? payload.sub : null;
       const roles = Array.isArray(payload?.roles) ? payload.roles : undefined;
       await this.safeAuditWrite({
@@ -74,7 +76,7 @@ export class AuthController {
   async loginPassword(@Req() req: any, @Body() dto: LoginPasswordDto) {
     try {
       const tokens = await this.authService.loginPassword(dto);
-      const payload = this.jwtService.decode(tokens.accessToken) as any;
+      const payload = this.jwtService.decode(tokens.accessToken);
       const userId = typeof payload?.sub === 'string' ? payload.sub : null;
       const roles = Array.isArray(payload?.roles) ? payload.roles : undefined;
       await this.safeAuditWrite({
@@ -111,7 +113,7 @@ export class AuthController {
   async loginSms(@Req() req: any, @Body() dto: LoginSmsDto) {
     try {
       const tokens = await this.authService.loginSms(dto);
-      const payload = this.jwtService.decode(tokens.accessToken) as any;
+      const payload = this.jwtService.decode(tokens.accessToken);
       const userId = typeof payload?.sub === 'string' ? payload.sub : null;
       const roles = Array.isArray(payload?.roles) ? payload.roles : undefined;
       await this.safeAuditWrite({
@@ -146,12 +148,14 @@ export class AuthController {
 
   @Post('refresh')
   async refresh(@Req() req: any, @Body() dto: RefreshDto) {
-    const payload = this.jwtService.decode(dto.refreshToken) as any;
+    const payload = this.jwtService.decode(dto.refreshToken);
     const userId = typeof payload?.sub === 'string' ? payload.sub : null;
     try {
       const tokens = await this.authService.refresh(dto.refreshToken);
-      const accessPayload = this.jwtService.decode(tokens.accessToken) as any;
-      const roles = Array.isArray(accessPayload?.roles) ? accessPayload.roles : undefined;
+      const accessPayload = this.jwtService.decode(tokens.accessToken);
+      const roles = Array.isArray(accessPayload?.roles)
+        ? accessPayload.roles
+        : undefined;
       await this.safeAuditWrite({
         actorUserId: userId ?? undefined,
         actorRoles: roles,

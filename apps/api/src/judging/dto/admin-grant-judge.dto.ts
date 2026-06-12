@@ -19,4 +19,3 @@ export class AdminGrantJudgeDto {
   @IsString()
   contact?: string;
 }
-

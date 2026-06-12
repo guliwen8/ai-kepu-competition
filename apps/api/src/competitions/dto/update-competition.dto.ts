@@ -1,4 +1,10 @@
-import { IsISO8601, IsObject, IsOptional, IsString, ValidateIf } from 'class-validator';
+import {
+  IsISO8601,
+  IsObject,
+  IsOptional,
+  IsString,
+  ValidateIf,
+} from 'class-validator';
 
 export class UpdateCompetitionDto {
   @IsOptional()

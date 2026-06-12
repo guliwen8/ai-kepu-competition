@@ -57,9 +57,7 @@ const Index: React.FC = () => {
     <View className={styles.container}>
       <View className={styles.hero}>
         <Text className={styles.title}>绍兴市高校 AI 科普作品创作大赛</Text>
-        <Text className={styles.subtitle}>
-          在线报名、材料提交、自动合规校验与进度通知
-        </Text>
+        <Text className={styles.subtitle}>在线报名、材料提交、自动合规校验与进度通知</Text>
 
         <Button className={styles.primaryBtn} onClick={goSubmit}>
           立即报名

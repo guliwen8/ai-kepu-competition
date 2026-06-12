@@ -1,6 +1,18 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JudgingAssignmentStatus, Prisma, ReviewTaskStatus, ReviewTaskType, SubmissionStatus } from '@prisma/client';
+import {
+  JudgingAssignmentStatus,
+  Prisma,
+  ReviewTaskStatus,
+  ReviewTaskType,
+  SubmissionStatus,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 function pad(n: number, len: number) {
@@ -31,7 +43,8 @@ export class JudgingService {
       .map((s) => s.trim())
       .filter(Boolean)
       .map((s) => Number(s));
-    if (parts.length === 5 && parts.every((n) => Number.isFinite(n) && n >= 0)) return parts;
+    if (parts.length === 5 && parts.every((n) => Number.isFinite(n) && n >= 0))
+      return parts;
     return [1, 1, 1, 1, 1];
   }
 
@@ -57,7 +70,10 @@ export class JudgingService {
         });
         return updated.blindCode!;
       } catch (e) {
-        if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+        if (
+          e instanceof Prisma.PrismaClientKnownRequestError &&
+          e.code === 'P2002'
+        ) {
           continue;
         }
         throw e;
@@ -70,7 +86,11 @@ export class JudgingService {
     const submission = await this.prisma.submission.findUnique({
       where: { id: submissionId },
       include: {
-        reviewCases: { orderBy: { createdAt: 'desc' }, take: 1, include: { tasks: true } },
+        reviewCases: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          include: { tasks: true },
+        },
         competition: true,
       },
     });
@@ -78,10 +98,16 @@ export class JudgingService {
 
     if (submission.competition) {
       const now = Date.now();
-      if (submission.competition.judgingStart && now < submission.competition.judgingStart.getTime()) {
+      if (
+        submission.competition.judgingStart &&
+        now < submission.competition.judgingStart.getTime()
+      ) {
         return { ok: false, reason: '评审未开始' };
       }
-      if (submission.competition.judgingEnd && now > submission.competition.judgingEnd.getTime()) {
+      if (
+        submission.competition.judgingEnd &&
+        now > submission.competition.judgingEnd.getTime()
+      ) {
         return { ok: false, reason: '评审已结束' };
       }
     }
@@ -93,10 +119,14 @@ export class JudgingService {
     if (!okStatus) return { ok: false, reason: '当前作品状态不可进入评审' };
 
     const latest = submission.reviewCases[0] ?? null;
-    const anon = latest?.tasks.find((t) => t.type === ReviewTaskType.ANONYMITY) ?? null;
-    if (anon && anon.status === ReviewTaskStatus.FAIL) return { ok: false, reason: '匿名检测未通过' };
-    const format = latest?.tasks.find((t) => t.type === ReviewTaskType.FORMAT) ?? null;
-    if (format && format.status === ReviewTaskStatus.FAIL) return { ok: false, reason: '格式审核未通过' };
+    const anon =
+      latest?.tasks.find((t) => t.type === ReviewTaskType.ANONYMITY) ?? null;
+    if (anon && anon.status === ReviewTaskStatus.FAIL)
+      return { ok: false, reason: '匿名检测未通过' };
+    const format =
+      latest?.tasks.find((t) => t.type === ReviewTaskType.FORMAT) ?? null;
+    if (format && format.status === ReviewTaskStatus.FAIL)
+      return { ok: false, reason: '格式审核未通过' };
 
     return { ok: true, reason: null };
   }
@@ -117,7 +147,11 @@ export class JudgingService {
     const map = new Map(submissions.map((s) => [s.id, s]));
 
     const creates: Array<{ submissionId: string; judgeId: string }> = [];
-    const skips: Array<{ submissionId: string; judgeId: string; reason: string }> = [];
+    const skips: Array<{
+      submissionId: string;
+      judgeId: string;
+      reason: string;
+    }> = [];
 
     for (const submissionId of args.submissionIds) {
       const sub = map.get(submissionId);
@@ -131,7 +165,11 @@ export class JudgingService {
       const eligible = await this.canEnterJudging(submissionId);
       if (!eligible.ok) {
         for (const judgeId of args.judgeIds) {
-          skips.push({ submissionId, judgeId, reason: eligible.reason ?? '不可进入评审' });
+          skips.push({
+            submissionId,
+            judgeId,
+            reason: eligible.reason ?? '不可进入评审',
+          });
         }
         continue;
       }
@@ -141,9 +179,15 @@ export class JudgingService {
       }
 
       for (const judgeId of args.judgeIds) {
-        const conflict = judgeId === sub.ownerId || sub.members.some((m) => m.userId === judgeId);
+        const conflict =
+          judgeId === sub.ownerId ||
+          sub.members.some((m) => m.userId === judgeId);
         if (conflict) {
-          skips.push({ submissionId, judgeId, reason: '利益冲突：评委为作品成员' });
+          skips.push({
+            submissionId,
+            judgeId,
+            reason: '利益冲突：评委为作品成员',
+          });
           continue;
         }
         creates.push({ submissionId, judgeId });
@@ -154,25 +198,43 @@ export class JudgingService {
       const createdIds: string[] = [];
       for (const c of creates) {
         const exists = await tx.judgingAssignment.findUnique({
-          where: { submissionId_judgeId: { submissionId: c.submissionId, judgeId: c.judgeId } },
+          where: {
+            submissionId_judgeId: {
+              submissionId: c.submissionId,
+              judgeId: c.judgeId,
+            },
+          },
           select: { id: true, status: true },
         });
         if (exists) {
           if (exists.status === JudgingAssignmentStatus.REVOKED) {
-            await tx.judgingScore.deleteMany({ where: { assignmentId: exists.id } });
+            await tx.judgingScore.deleteMany({
+              where: { assignmentId: exists.id },
+            });
             await tx.judgingAssignment.update({
               where: { id: exists.id },
-              data: { status: JudgingAssignmentStatus.ASSIGNED, submittedAt: null, lockedAt: null },
+              data: {
+                status: JudgingAssignmentStatus.ASSIGNED,
+                submittedAt: null,
+                lockedAt: null,
+              },
             });
             createdIds.push(exists.id);
           }
           continue;
         }
-        const row = await tx.judgingAssignment.create({ data: { submissionId: c.submissionId, judgeId: c.judgeId } });
+        const row = await tx.judgingAssignment.create({
+          data: { submissionId: c.submissionId, judgeId: c.judgeId },
+        });
         createdIds.push(row.id);
       }
       await tx.submission.updateMany({
-        where: { id: { in: args.submissionIds }, status: { in: [SubmissionStatus.APPROVED, SubmissionStatus.UNDER_REVIEW] } },
+        where: {
+          id: { in: args.submissionIds },
+          status: {
+            in: [SubmissionStatus.APPROVED, SubmissionStatus.UNDER_REVIEW],
+          },
+        },
         data: { status: SubmissionStatus.IN_JUDGING },
       });
       return createdIds;
@@ -187,21 +249,35 @@ export class JudgingService {
 
   async adminRevokeAssignment(args: { assignmentId: string }) {
     return this.prisma.$transaction(async (tx) => {
-      const a = await tx.judgingAssignment.findUnique({ where: { id: args.assignmentId }, include: { score: true } });
+      const a = await tx.judgingAssignment.findUnique({
+        where: { id: args.assignmentId },
+        include: { score: true },
+      });
       if (!a) throw new NotFoundException('任务不存在');
-      if (a.status === JudgingAssignmentStatus.SUBMITTED) throw new BadRequestException('已提交任务不可撤销');
+      if (a.status === JudgingAssignmentStatus.SUBMITTED)
+        throw new BadRequestException('已提交任务不可撤销');
       await tx.judgingScore.deleteMany({ where: { assignmentId: a.id } });
       const updated = await tx.judgingAssignment.update({
         where: { id: a.id },
-        data: { status: JudgingAssignmentStatus.REVOKED, submittedAt: null, lockedAt: null },
+        data: {
+          status: JudgingAssignmentStatus.REVOKED,
+          submittedAt: null,
+          lockedAt: null,
+        },
       });
       return { ok: true, id: updated.id, status: updated.status };
     });
   }
 
-  async adminListAssignments(args: { page: number; pageSize: number; status?: JudgingAssignmentStatus; judgeId?: string }) {
+  async adminListAssignments(args: {
+    page: number;
+    pageSize: number;
+    status?: JudgingAssignmentStatus;
+    judgeId?: string;
+  }) {
     const page = Number.isFinite(args.page) && args.page > 0 ? args.page : 1;
-    const pageSize = Number.isFinite(args.pageSize) && args.pageSize > 0 ? args.pageSize : 20;
+    const pageSize =
+      Number.isFinite(args.pageSize) && args.pageSize > 0 ? args.pageSize : 20;
     const where: any = {};
     if (args.status) where.status = args.status;
     if (args.judgeId) where.judgeId = args.judgeId;
@@ -214,8 +290,23 @@ export class JudgingService {
         skip: (page - 1) * pageSize,
         take: pageSize,
         include: {
-          submission: { select: { id: true, category: true, title: true, blindCode: true, status: true } },
-          judge: { select: { id: true, phone: true, username: true, judgeProfile: true } },
+          submission: {
+            select: {
+              id: true,
+              category: true,
+              title: true,
+              blindCode: true,
+              status: true,
+            },
+          },
+          judge: {
+            select: {
+              id: true,
+              phone: true,
+              username: true,
+              judgeProfile: true,
+            },
+          },
           score: true,
         },
       }),
@@ -232,7 +323,9 @@ export class JudgingService {
       where,
       orderBy: { createdAt: 'desc' },
       include: {
-        submission: { select: { id: true, blindCode: true, category: true, title: true } },
+        submission: {
+          select: { id: true, blindCode: true, category: true, title: true },
+        },
         judge: { select: { id: true, phone: true, username: true } },
         score: true,
       },
@@ -288,7 +381,8 @@ export class JudgingService {
 
   async adminListJudges(args: { page: number; pageSize: number; q?: string }) {
     const page = Number.isFinite(args.page) && args.page > 0 ? args.page : 1;
-    const pageSize = Number.isFinite(args.pageSize) && args.pageSize > 0 ? args.pageSize : 20;
+    const pageSize =
+      Number.isFinite(args.pageSize) && args.pageSize > 0 ? args.pageSize : 20;
     const q = args.q?.trim();
 
     const where: any = {
@@ -334,8 +428,12 @@ export class JudgingService {
         _count: { _all: true },
       }),
     ]);
-    const assignedMap = new Map(assignedCounts.map((g) => [g.judgeId, g._count._all]));
-    const submittedMap = new Map(submittedCounts.map((g) => [g.judgeId, g._count._all]));
+    const assignedMap = new Map(
+      assignedCounts.map((g) => [g.judgeId, g._count._all]),
+    );
+    const submittedMap = new Map(
+      submittedCounts.map((g) => [g.judgeId, g._count._all]),
+    );
 
     return {
       page,
@@ -344,14 +442,28 @@ export class JudgingService {
       items: items.map((it) => {
         const assigned = assignedMap.get(it.id) ?? 0;
         const submitted = submittedMap.get(it.id) ?? 0;
-        const completionRate = assigned === 0 ? 0 : Math.round((submitted / assigned) * 100);
-        return { ...it, assignedCount: assigned, submittedCount: submitted, completionRate };
+        const completionRate =
+          assigned === 0 ? 0 : Math.round((submitted / assigned) * 100);
+        return {
+          ...it,
+          assignedCount: assigned,
+          submittedCount: submitted,
+          completionRate,
+        };
       }),
     };
   }
 
-  async grantJudgeByPhone(args: { phone: string; realName: string; orgName?: string; title?: string; contact?: string }) {
-    const user = await this.prisma.user.findUnique({ where: { phone: args.phone } });
+  async grantJudgeByPhone(args: {
+    phone: string;
+    realName: string;
+    orgName?: string;
+    title?: string;
+    contact?: string;
+  }) {
+    const user = await this.prisma.user.findUnique({
+      where: { phone: args.phone },
+    });
     if (!user) throw new NotFoundException('用户不存在');
 
     const role = await this.prisma.role.upsert({
@@ -368,8 +480,19 @@ export class JudgingService {
 
     const profile = await this.prisma.judgeProfile.upsert({
       where: { userId: user.id },
-      update: { realName: args.realName, orgName: args.orgName, title: args.title, contact: args.contact },
-      create: { userId: user.id, realName: args.realName, orgName: args.orgName, title: args.title, contact: args.contact },
+      update: {
+        realName: args.realName,
+        orgName: args.orgName,
+        title: args.title,
+        contact: args.contact,
+      },
+      create: {
+        userId: user.id,
+        realName: args.realName,
+        orgName: args.orgName,
+        title: args.title,
+        contact: args.contact,
+      },
     });
 
     return { ok: true, userId: user.id, profile };
@@ -391,8 +514,21 @@ export class JudgingService {
             title: true,
             intro: true,
             aiToolsUsage: true,
-            attachments: { select: { id: true, createdAt: true, kind: true, mimeType: true, byteSize: true, meta: true } },
-            reviewCases: { orderBy: { createdAt: 'desc' }, take: 1, include: { tasks: true } },
+            attachments: {
+              select: {
+                id: true,
+                createdAt: true,
+                kind: true,
+                mimeType: true,
+                byteSize: true,
+                meta: true,
+              },
+            },
+            reviewCases: {
+              orderBy: { createdAt: 'desc' },
+              take: 1,
+              include: { tasks: true },
+            },
           },
         },
         score: true,
@@ -430,8 +566,21 @@ export class JudgingService {
             title: true,
             intro: true,
             aiToolsUsage: true,
-            attachments: { select: { id: true, createdAt: true, kind: true, mimeType: true, byteSize: true, meta: true } },
-            reviewCases: { orderBy: { createdAt: 'desc' }, take: 1, include: { tasks: true } },
+            attachments: {
+              select: {
+                id: true,
+                createdAt: true,
+                kind: true,
+                mimeType: true,
+                byteSize: true,
+                meta: true,
+              },
+            },
+            reviewCases: {
+              orderBy: { createdAt: 'desc' },
+              take: 1,
+              include: { tasks: true },
+            },
           },
         },
         score: true,
@@ -458,7 +607,18 @@ export class JudgingService {
     };
   }
 
-  async judgeUpsertScore(userId: string, assignmentId: string, input: { s1: number; s2: number; s3: number; s4: number; s5: number; comment?: string }) {
+  async judgeUpsertScore(
+    userId: string,
+    assignmentId: string,
+    input: {
+      s1: number;
+      s2: number;
+      s3: number;
+      s4: number;
+      s5: number;
+      comment?: string;
+    },
+  ) {
     const a = await this.prisma.judgingAssignment.findUnique({
       where: { id: assignmentId },
       select: { id: true, judgeId: true, lockedAt: true, submissionId: true },
@@ -473,10 +633,16 @@ export class JudgingService {
     });
     if (submission?.competition) {
       const now = Date.now();
-      if (submission.competition.judgingStart && now < submission.competition.judgingStart.getTime()) {
+      if (
+        submission.competition.judgingStart &&
+        now < submission.competition.judgingStart.getTime()
+      ) {
         throw new BadRequestException('评审未开始');
       }
-      if (submission.competition.judgingEnd && now > submission.competition.judgingEnd.getTime()) {
+      if (
+        submission.competition.judgingEnd &&
+        now > submission.competition.judgingEnd.getTime()
+      ) {
         throw new BadRequestException('评审已结束');
       }
     }
@@ -484,7 +650,11 @@ export class JudgingService {
     const rawTotal = input.s1 + input.s2 + input.s3 + input.s4 + input.s5;
     const weights = this.judgingWeights();
     const weightedTotal = Math.round(
-      input.s1 * weights[0] + input.s2 * weights[1] + input.s3 * weights[2] + input.s4 * weights[3] + input.s5 * weights[4],
+      input.s1 * weights[0] +
+        input.s2 * weights[1] +
+        input.s3 * weights[2] +
+        input.s4 * weights[3] +
+        input.s5 * weights[4],
     );
 
     const score = await this.prisma.judgingScore.upsert({
@@ -517,7 +687,10 @@ export class JudgingService {
 
   async judgeSubmit(userId: string, assignmentId: string) {
     return this.prisma.$transaction(async (tx) => {
-      const a = await tx.judgingAssignment.findUnique({ where: { id: assignmentId }, include: { score: true } });
+      const a = await tx.judgingAssignment.findUnique({
+        where: { id: assignmentId },
+        include: { score: true },
+      });
       if (!a) throw new NotFoundException('任务不存在');
       if (a.judgeId !== userId) throw new ForbiddenException();
       if (a.lockedAt) return a;
@@ -529,17 +702,27 @@ export class JudgingService {
       });
       if (submission?.competition) {
         const now = Date.now();
-        if (submission.competition.judgingStart && now < submission.competition.judgingStart.getTime()) {
+        if (
+          submission.competition.judgingStart &&
+          now < submission.competition.judgingStart.getTime()
+        ) {
           throw new BadRequestException('评审未开始');
         }
-        if (submission.competition.judgingEnd && now > submission.competition.judgingEnd.getTime()) {
+        if (
+          submission.competition.judgingEnd &&
+          now > submission.competition.judgingEnd.getTime()
+        ) {
           throw new BadRequestException('评审已结束');
         }
       }
 
       return tx.judgingAssignment.update({
         where: { id: assignmentId },
-        data: { status: JudgingAssignmentStatus.SUBMITTED, submittedAt: new Date(), lockedAt: new Date() },
+        data: {
+          status: JudgingAssignmentStatus.SUBMITTED,
+          submittedAt: new Date(),
+          lockedAt: new Date(),
+        },
         include: { score: true },
       });
     });

@@ -118,7 +118,9 @@ export default function SubmissionsPage() {
         <View className={styles.card}>
           {error ? <Text className={styles.error}>{error}</Text> : null}
           {loading ? <Text className={styles.hint}>加载中...</Text> : null}
-          {!loading && items.length === 0 ? <Text className={styles.empty}>暂无作品，先去提交一个作品吧</Text> : null}
+          {!loading && items.length === 0 ? (
+            <Text className={styles.empty}>暂无作品，先去提交一个作品吧</Text>
+          ) : null}
 
           {items.map((it) => {
             const latest = it.reviewCases?.[0] ?? null;
@@ -129,7 +131,9 @@ export default function SubmissionsPage() {
                 <View className={styles.metaRow}>
                   <Text className={styles.tag}>{labelCategory(it.category)}</Text>
                   <Text className={styles.tag}>{labelStatus(it.status)}</Text>
-                  {latest ? <Text className={tagClass(latest.summary)}>{labelSummary(latest.summary)}</Text> : null}
+                  {latest ? (
+                    <Text className={tagClass(latest.summary)}>{labelSummary(latest.summary)}</Text>
+                  ) : null}
                 </View>
                 {tasks.length ? (
                   <View className={styles.metaRow}>
@@ -160,4 +164,3 @@ export default function SubmissionsPage() {
     </View>
   );
 }
-

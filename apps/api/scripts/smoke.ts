@@ -2,7 +2,13 @@ import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 
-type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue };
+type JsonValue =
+  | null
+  | boolean
+  | number
+  | string
+  | JsonValue[]
+  | { [key: string]: JsonValue };
 
 function loadEnv(): Record<string, string> {
   let dir = process.cwd();
@@ -18,7 +24,10 @@ function loadEnv(): Record<string, string> {
         if (idx <= 0) continue;
         const key = line.slice(0, idx).trim();
         let value = line.slice(idx + 1).trim();
-        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        if (
+          (value.startsWith('"') && value.endsWith('"')) ||
+          (value.startsWith("'") && value.endsWith("'"))
+        ) {
           value = value.slice(1, -1);
         }
         out[key] = value;
@@ -96,12 +105,18 @@ function isoOffset(ms: number) {
 async function main() {
   const baseUrl = process.env.API_BASE_URL ?? 'http://localhost:3001';
   const env = loadEnv();
-  const bootstrapToken = process.env.ADMIN_BOOTSTRAP_TOKEN ?? env.ADMIN_BOOTSTRAP_TOKEN ?? '';
-  const adminPhone = process.env.SMOKE_ADMIN_PHONE ?? process.env.SMOKE_PHONE ?? '13957512889';
-  const phone = process.env.SMOKE_PARTICIPANT_PHONE ?? `139${String(Date.now()).slice(-8)}`;
+  const bootstrapToken =
+    process.env.ADMIN_BOOTSTRAP_TOKEN ?? env.ADMIN_BOOTSTRAP_TOKEN ?? '';
+  const adminPhone =
+    process.env.SMOKE_ADMIN_PHONE ?? process.env.SMOKE_PHONE ?? '13957512889';
+  const phone =
+    process.env.SMOKE_PARTICIPANT_PHONE ?? `139${String(Date.now()).slice(-8)}`;
   const code = process.env.SMOKE_CODE ?? '000000';
 
-  const adminLogin0 = await requestJson<{ accessToken: string; refreshToken: string }>({
+  const adminLogin0 = await requestJson<{
+    accessToken: string;
+    refreshToken: string;
+  }>({
     baseUrl,
     path: '/auth/login/sms',
     method: 'POST',
@@ -125,7 +140,10 @@ async function main() {
       token: adminInitialToken,
       body: { token: bootstrapToken },
     });
-    const adminLogin = await requestJson<{ accessToken: string; refreshToken: string }>({
+    const adminLogin = await requestJson<{
+      accessToken: string;
+      refreshToken: string;
+    }>({
       baseUrl,
       path: '/auth/login/sms',
       method: 'POST',
@@ -138,7 +156,9 @@ async function main() {
       token: adminLogin.accessToken,
     });
     if (!me.roles.includes('admin')) {
-      throw new Error('当前 SMOKE_PHONE 用户不是 admin，请先配置 ADMIN_BOOTSTRAP_TOKEN 或使用已授予 admin 的手机号运行');
+      throw new Error(
+        '当前 SMOKE_PHONE 用户不是 admin，请先配置 ADMIN_BOOTSTRAP_TOKEN 或使用已授予 admin 的手机号运行',
+      );
     }
     adminToken = adminLogin.accessToken;
   } else if (initialMe.roles.includes('admin')) {
@@ -169,7 +189,10 @@ async function main() {
     });
   }
 
-  const login = await requestJson<{ accessToken: string; refreshToken: string }>({
+  const login = await requestJson<{
+    accessToken: string;
+    refreshToken: string;
+  }>({
     baseUrl,
     path: '/auth/login/sms',
     method: 'POST',
@@ -183,7 +206,11 @@ async function main() {
     path: '/competitions/current',
     method: 'GET',
   });
-  if (currentCompetition !== null && (typeof currentCompetition !== 'object' || Array.isArray(currentCompetition))) {
+  if (
+    currentCompetition !== null &&
+    (typeof currentCompetition !== 'object' ||
+      Array.isArray(currentCompetition))
+  ) {
     throw new Error('GET /competitions/current invalid response');
   }
 
@@ -192,7 +219,11 @@ async function main() {
     expectAnonStatus: 'PASS' | 'FAIL' | 'NEED_MANUAL';
     expectContentStatus?: 'PASS' | 'FAIL' | 'NEED_MANUAL' | 'MISSING';
   }) => {
-    const submission = await requestJson<{ id: string; status: string; category: string }>({
+    const submission = await requestJson<{
+      id: string;
+      status: string;
+      category: string;
+    }>({
       baseUrl,
       path: '/submissions',
       method: 'POST',
@@ -230,7 +261,9 @@ async function main() {
     const anon = findTask(latest, 'ANONYMITY');
     if (!anon) throw new Error('ANONYMITY task missing');
     if (anon.status !== args.expectAnonStatus) {
-      throw new Error(`ANONYMITY expected ${args.expectAnonStatus} got ${String(anon.status)}`);
+      throw new Error(
+        `ANONYMITY expected ${args.expectAnonStatus} got ${String(anon.status)}`,
+      );
     }
 
     const content = findTask(latest, 'CONTENT');
@@ -240,7 +273,9 @@ async function main() {
       } else {
         if (!content) throw new Error('CONTENT task missing');
         if (content.status !== args.expectContentStatus) {
-          throw new Error(`CONTENT expected ${args.expectContentStatus} got ${String(content.status)}`);
+          throw new Error(
+            `CONTENT expected ${args.expectContentStatus} got ${String(content.status)}`,
+          );
         }
       }
     }

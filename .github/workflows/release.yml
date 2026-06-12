@@ -3,11 +3,11 @@ name: release
 on:
   push:
     tags:
-      - "v*.*.*"
+      - 'v*.*.*'
   workflow_dispatch:
     inputs:
       tag:
-        description: "要发布的 tag（需已存在，例如 v1.2.3）"
+        description: '要发布的 tag（需已存在，例如 v1.2.3）'
         required: true
         type: string
 

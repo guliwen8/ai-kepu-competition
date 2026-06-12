@@ -11,7 +11,10 @@ export class ReviewsController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Get('submissions/:id/latest')
-  async latest(@Req() req: { user: { userId: string } }, @Param('id') id: string) {
+  async latest(
+    @Req() req: { user: { userId: string } },
+    @Param('id') id: string,
+  ) {
     const submission = await this.prisma.submission.findUnique({
       where: { id },
       include: { members: true },
@@ -30,4 +33,3 @@ export class ReviewsController {
     return reviewCase;
   }
 }
-

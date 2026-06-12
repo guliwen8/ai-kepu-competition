@@ -25,7 +25,8 @@ export class PublicationsPublicController {
 
   @Get('submissions/:id')
   submission(@Param('id') id: string) {
-    return this.publicationsService.getPublicSubmissionDetail({ submissionId: id });
+    return this.publicationsService.getPublicSubmissionDetail({
+      submissionId: id,
+    });
   }
 }
-

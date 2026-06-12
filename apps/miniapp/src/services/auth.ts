@@ -8,4 +8,3 @@ export function loginSms(phone: string, code: string) {
 export function me() {
   return http<Me>('/auth/me');
 }
-

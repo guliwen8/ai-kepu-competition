@@ -3,7 +3,13 @@ import { View, Text, Button } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
 import { useAuthStore } from '../../store/auth';
-import { getSubmission, type Submission, type SubmissionCategory, type ReviewFinding, type ReviewTask } from '../../services/submissions';
+import {
+  getSubmission,
+  type Submission,
+  type SubmissionCategory,
+  type ReviewFinding,
+  type ReviewTask,
+} from '../../services/submissions';
 
 function labelCategory(v: SubmissionCategory) {
   if (v === 'VIDEO') return '科普视频';
@@ -62,7 +68,8 @@ function findingText(item: ReviewFinding) {
 
 function normalizeFindings(findings: any): string[] {
   if (!findings) return [];
-  if (Array.isArray(findings)) return findings.map((it) => findingText(normalizeFinding(it))).filter(Boolean);
+  if (Array.isArray(findings))
+    return findings.map((it) => findingText(normalizeFinding(it))).filter(Boolean);
   return [findingText(normalizeFinding(findings))].filter(Boolean);
 }
 
@@ -167,7 +174,11 @@ export default function SubmissionDetailPage() {
                 <View className={styles.tagRow}>
                   <Text className={styles.tag}>{labelCategory(item.category)}</Text>
                   <Text className={styles.tag}>{labelStatus(item.status)}</Text>
-                  {latestReview ? <Text className={tagClass(latestReview.summary)}>{labelSummary(latestReview.summary)}</Text> : null}
+                  {latestReview ? (
+                    <Text className={tagClass(latestReview.summary)}>
+                      {labelSummary(latestReview.summary)}
+                    </Text>
+                  ) : null}
                 </View>
 
                 <View className={styles.row}>
@@ -213,7 +224,9 @@ export default function SubmissionDetailPage() {
             ) : (
               <>
                 <View className={styles.tagRow}>
-                  <Text className={tagClass(latestReview.summary)}>{labelSummary(latestReview.summary)}</Text>
+                  <Text className={tagClass(latestReview.summary)}>
+                    {labelSummary(latestReview.summary)}
+                  </Text>
                 </View>
 
                 {tasks.length ? (
@@ -259,4 +272,3 @@ export default function SubmissionDetailPage() {
     </View>
   );
 }
-

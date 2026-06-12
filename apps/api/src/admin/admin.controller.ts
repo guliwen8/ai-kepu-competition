@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -29,7 +38,10 @@ export class AdminController {
 
   @Post('bootstrap')
   @UseGuards(JwtAuthGuard)
-  async bootstrap(@Req() req: { user: { userId: string } }, @Body() dto: AdminBootstrapDto) {
+  async bootstrap(
+    @Req() req: { user: { userId: string } },
+    @Body() dto: AdminBootstrapDto,
+  ) {
     return this.adminService.bootstrapAdmin(req.user.userId, dto.token);
   }
 
@@ -87,7 +99,11 @@ export class AdminController {
   @Post('submissions/:id/rerun')
   @Roles('admin')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  async rerun(@Req() req: any, @Param('id') id: string, @Body() dto: AdminRerunDto) {
+  async rerun(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() dto: AdminRerunDto,
+  ) {
     const r = await this.adminService.rerun({ id, types: dto.types });
     await this.auditService.write({
       actorUserId: req.user?.userId,
@@ -106,7 +122,10 @@ export class AdminController {
   @Roles('admin')
   @UseGuards(JwtAuthGuard, RolesGuard)
   async publicize(@Req() req: any, @Param('id') id: string) {
-    const r = await this.adminService.publicizeSubmission({ id, enabled: true });
+    const r = await this.adminService.publicizeSubmission({
+      id,
+      enabled: true,
+    });
     await this.auditService.write({
       actorUserId: req.user?.userId,
       actorRoles: req.user?.roles,
@@ -124,7 +143,10 @@ export class AdminController {
   @Roles('admin')
   @UseGuards(JwtAuthGuard, RolesGuard)
   async unpublicize(@Req() req: any, @Param('id') id: string) {
-    const r = await this.adminService.publicizeSubmission({ id, enabled: false });
+    const r = await this.adminService.publicizeSubmission({
+      id,
+      enabled: false,
+    });
     await this.auditService.write({
       actorUserId: req.user?.userId,
       actorRoles: req.user?.roles,
@@ -142,7 +164,10 @@ export class AdminController {
   @Roles('admin')
   @UseGuards(JwtAuthGuard, RolesGuard)
   async publicizeBatch(@Req() req: any, @Body() dto: AdminPublicizeDto) {
-    const r = await this.adminService.publicizeSubmissionsBatch({ ids: dto.ids, enabled: dto.enabled });
+    const r = await this.adminService.publicizeSubmissionsBatch({
+      ids: dto.ids,
+      enabled: dto.enabled,
+    });
     await this.auditService.write({
       actorUserId: req.user?.userId,
       actorRoles: req.user?.roles,

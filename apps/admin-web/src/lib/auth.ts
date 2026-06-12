@@ -3,10 +3,10 @@ export type Tokens = {
   refreshToken: string;
 };
 
-const KEY = "aikepu_tokens";
+const KEY = 'aikepu_tokens';
 
 export function getTokens(): Tokens | null {
-  if (typeof window === "undefined") return null;
+  if (typeof window === 'undefined') return null;
   const raw = window.localStorage.getItem(KEY);
   if (!raw) return null;
   try {
@@ -23,4 +23,3 @@ export function setTokens(tokens: Tokens) {
 export function clearTokens() {
   window.localStorage.removeItem(KEY);
 }
-

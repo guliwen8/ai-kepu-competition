@@ -2,7 +2,13 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
-type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue };
+type JsonValue =
+  | null
+  | boolean
+  | number
+  | string
+  | JsonValue[]
+  | { [key: string]: JsonValue };
 
 function loadEnv(): Record<string, string> {
   let dir = process.cwd();
@@ -18,7 +24,10 @@ function loadEnv(): Record<string, string> {
         if (idx <= 0) continue;
         const key = line.slice(0, idx).trim();
         let value = line.slice(idx + 1).trim();
-        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        if (
+          (value.startsWith('"') && value.endsWith('"')) ||
+          (value.startsWith("'") && value.endsWith("'"))
+        ) {
           value = value.slice(1, -1);
         }
         out[key] = value;
@@ -84,7 +93,12 @@ async function requestMultipart<T extends JsonValue>(args: {
   return readJson<T>(res);
 }
 
-async function requestText(args: { baseUrl: string; path: string; method: string; token?: string }) {
+async function requestText(args: {
+  baseUrl: string;
+  path: string;
+  method: string;
+  token?: string;
+}) {
   const res = await fetch(`${args.baseUrl}${args.path}`, {
     method: args.method,
     headers: {
@@ -105,14 +119,20 @@ function isoOffset(ms: number) {
 async function main() {
   const baseUrl = process.env.API_BASE_URL ?? 'http://localhost:3001';
   const env = loadEnv();
-  const bootstrapToken = process.env.ADMIN_BOOTSTRAP_TOKEN ?? env.ADMIN_BOOTSTRAP_TOKEN ?? '';
+  const bootstrapToken =
+    process.env.ADMIN_BOOTSTRAP_TOKEN ?? env.ADMIN_BOOTSTRAP_TOKEN ?? '';
 
   const adminPhone = process.env.SMOKE_PHONE ?? '13957512889';
   const code = process.env.SMOKE_CODE ?? '000000';
-  const judgePhone = process.env.JUDGE_PHONE ?? `139${String(Date.now()).slice(-8)}`;
-  const participantPhone = process.env.PARTICIPANT_PHONE ?? `138${String(Date.now()).slice(-8)}`;
+  const judgePhone =
+    process.env.JUDGE_PHONE ?? `139${String(Date.now()).slice(-8)}`;
+  const participantPhone =
+    process.env.PARTICIPANT_PHONE ?? `138${String(Date.now()).slice(-8)}`;
 
-  const login1 = await requestJson<{ accessToken: string; refreshToken: string }>({
+  const login1 = await requestJson<{
+    accessToken: string;
+    refreshToken: string;
+  }>({
     baseUrl,
     path: '/auth/login/sms',
     method: 'POST',
@@ -129,7 +149,10 @@ async function main() {
     });
   }
 
-  const adminLogin = await requestJson<{ accessToken: string; refreshToken: string }>({
+  const adminLogin = await requestJson<{
+    accessToken: string;
+    refreshToken: string;
+  }>({
     baseUrl,
     path: '/auth/login/sms',
     method: 'POST',
@@ -143,7 +166,9 @@ async function main() {
     token: adminLogin.accessToken,
   });
   if (!adminMe.roles.includes('admin')) {
-    throw new Error('当前 SMOKE_PHONE 用户不是 admin，请先配置 ADMIN_BOOTSTRAP_TOKEN 或使用已授予 admin 的手机号运行');
+    throw new Error(
+      '当前 SMOKE_PHONE 用户不是 admin，请先配置 ADMIN_BOOTSTRAP_TOKEN 或使用已授予 admin 的手机号运行',
+    );
   }
 
   const openWindows = {
@@ -199,7 +224,10 @@ async function main() {
     body: { phone: judgePhone, realName: '评委A', orgName: '本地测试' },
   });
 
-  const judgeLogin = await requestJson<{ accessToken: string; refreshToken: string }>({
+  const judgeLogin = await requestJson<{
+    accessToken: string;
+    refreshToken: string;
+  }>({
     baseUrl,
     path: '/auth/login/sms',
     method: 'POST',
@@ -212,7 +240,10 @@ async function main() {
     token: judgeLogin.accessToken,
   });
 
-  const participantLogin = await requestJson<{ accessToken: string; refreshToken: string }>({
+  const participantLogin = await requestJson<{
+    accessToken: string;
+    refreshToken: string;
+  }>({
     baseUrl,
     path: '/auth/login/sms',
     method: 'POST',
@@ -280,7 +311,11 @@ async function main() {
     path: '/admin/judging/assignments:batch',
     method: 'POST',
     token: adminLogin.accessToken,
-    body: { submissionIds: [created.id], judgeIds: [judgeMe.id], ensureBlindCode: true },
+    body: {
+      submissionIds: [created.id],
+      judgeIds: [judgeMe.id],
+      ensureBlindCode: true,
+    },
   });
 
   const assignments = await requestJson<any>({
@@ -290,7 +325,9 @@ async function main() {
     token: adminLogin.accessToken,
   });
   const items = Array.isArray(assignments.items) ? assignments.items : [];
-  const assignmentId = items.find((it: any) => it.submission?.id === created.id)?.id ?? items[0]?.id;
+  const assignmentId =
+    items.find((it: any) => it.submission?.id === created.id)?.id ??
+    items[0]?.id;
   if (!assignmentId) throw new Error('未找到分配任务');
 
   await requestJson<JsonValue>({
@@ -313,8 +350,12 @@ async function main() {
       `sinceMinutes=10`,
       `action=${encodeURIComponent(args.action)}`,
       `resourceType=${encodeURIComponent(args.resourceType)}`,
-      ...(args.resourceId ? [`resourceId=${encodeURIComponent(args.resourceId)}`] : []),
-      ...(args.actorUserId ? [`actorUserId=${encodeURIComponent(args.actorUserId)}`] : []),
+      ...(args.resourceId
+        ? [`resourceId=${encodeURIComponent(args.resourceId)}`]
+        : []),
+      ...(args.actorUserId
+        ? [`actorUserId=${encodeURIComponent(args.actorUserId)}`]
+        : []),
     ].join('&');
     const r = await requestJson<any>({
       baseUrl,
@@ -329,7 +370,9 @@ async function main() {
         it?.resourceType === args.resourceType &&
         (args.resourceId ? it?.resourceId === args.resourceId : true) &&
         (args.actorUserId ? it?.actorUserId === args.actorUserId : true) &&
-        (typeof args.success === 'boolean' ? Boolean(it?.success) === args.success : true),
+        (typeof args.success === 'boolean'
+          ? Boolean(it?.success) === args.success
+          : true),
     );
     if (!matched) {
       throw new Error(
@@ -344,18 +387,77 @@ async function main() {
   }
 
   for (const a of [
-    { action: 'ADMIN_COMPETITION_CREATE', resourceType: 'Competition', resourceId: competition.id, actorUserId: adminMe.id },
-    { action: 'ADMIN_COMPETITION_UPDATE', resourceType: 'Competition', resourceId: competition.id, actorUserId: adminMe.id },
-    { action: 'ADMIN_COMPETITION_SET_CURRENT', resourceType: 'Competition', resourceId: competition.id, actorUserId: adminMe.id },
-    { action: 'ADMIN_JUDGE_GRANT', resourceType: 'Judge', resourceId: grant?.userId ?? undefined, actorUserId: adminMe.id },
-    { action: 'ADMIN_JUDGING_ASSIGN_BATCH', resourceType: 'JudgingAssignment', actorUserId: adminMe.id },
-    { action: 'ADMIN_JUDGING_REVOKE', resourceType: 'JudgingAssignment', resourceId: assignmentId, actorUserId: adminMe.id },
-    { action: 'PARTICIPANT_SUBMISSION_CREATE_DRAFT', resourceType: 'Submission', resourceId: created.id, actorUserId: participantMe.id },
-    { action: 'PARTICIPANT_SUBMISSION_UPDATE_DRAFT', resourceType: 'Submission', resourceId: created.id, actorUserId: participantMe.id },
-    { action: 'PARTICIPANT_SUBMISSION_UPLOAD_ATTACHMENT', resourceType: 'Submission', resourceId: created.id, actorUserId: participantMe.id },
-    { action: 'PARTICIPANT_SUBMISSION_SUBMIT', resourceType: 'Submission', resourceId: created.id, actorUserId: participantMe.id },
-    { action: 'PARTICIPANT_TEAM_CREATE', resourceType: 'Team', resourceId: team.id, actorUserId: participantMe.id },
-    { action: 'PARTICIPANT_TEAM_ADD_MEMBER', resourceType: 'Team', resourceId: team.id, actorUserId: participantMe.id },
+    {
+      action: 'ADMIN_COMPETITION_CREATE',
+      resourceType: 'Competition',
+      resourceId: competition.id,
+      actorUserId: adminMe.id,
+    },
+    {
+      action: 'ADMIN_COMPETITION_UPDATE',
+      resourceType: 'Competition',
+      resourceId: competition.id,
+      actorUserId: adminMe.id,
+    },
+    {
+      action: 'ADMIN_COMPETITION_SET_CURRENT',
+      resourceType: 'Competition',
+      resourceId: competition.id,
+      actorUserId: adminMe.id,
+    },
+    {
+      action: 'ADMIN_JUDGE_GRANT',
+      resourceType: 'Judge',
+      resourceId: grant?.userId ?? undefined,
+      actorUserId: adminMe.id,
+    },
+    {
+      action: 'ADMIN_JUDGING_ASSIGN_BATCH',
+      resourceType: 'JudgingAssignment',
+      actorUserId: adminMe.id,
+    },
+    {
+      action: 'ADMIN_JUDGING_REVOKE',
+      resourceType: 'JudgingAssignment',
+      resourceId: assignmentId,
+      actorUserId: adminMe.id,
+    },
+    {
+      action: 'PARTICIPANT_SUBMISSION_CREATE_DRAFT',
+      resourceType: 'Submission',
+      resourceId: created.id,
+      actorUserId: participantMe.id,
+    },
+    {
+      action: 'PARTICIPANT_SUBMISSION_UPDATE_DRAFT',
+      resourceType: 'Submission',
+      resourceId: created.id,
+      actorUserId: participantMe.id,
+    },
+    {
+      action: 'PARTICIPANT_SUBMISSION_UPLOAD_ATTACHMENT',
+      resourceType: 'Submission',
+      resourceId: created.id,
+      actorUserId: participantMe.id,
+    },
+    {
+      action: 'PARTICIPANT_SUBMISSION_SUBMIT',
+      resourceType: 'Submission',
+      resourceId: created.id,
+      actorUserId: participantMe.id,
+    },
+    {
+      action: 'PARTICIPANT_TEAM_CREATE',
+      resourceType: 'Team',
+      resourceId: team.id,
+      actorUserId: participantMe.id,
+    },
+    {
+      action: 'PARTICIPANT_TEAM_ADD_MEMBER',
+      resourceType: 'Team',
+      resourceId: team.id,
+      actorUserId: participantMe.id,
+    },
   ]) {
     await assertAuditExists({ ...a, success: true });
   }
@@ -366,8 +468,10 @@ async function main() {
     method: 'GET',
     token: adminLogin.accessToken,
   });
-  if (csv.includes(judgePhone)) throw new Error('audit export leaks judge phone');
-  if (csv.includes('评委A')) throw new Error('audit export leaks judge realName');
+  if (csv.includes(judgePhone))
+    throw new Error('audit export leaks judge phone');
+  if (csv.includes('评委A'))
+    throw new Error('audit export leaks judge realName');
 
   console.log(
     JSON.stringify(

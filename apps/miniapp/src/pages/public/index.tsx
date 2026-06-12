@@ -15,11 +15,14 @@ const defaultCategories: Array<{ label: string; value: SubmissionCategory }> = [
 ];
 
 function normalizeSubmissionCategory(raw: any): SubmissionCategory | null {
-  if (raw === 'DRAMA' || raw === 'VIDEO' || raw === 'SCIFI_PAINT' || raw === 'CREATIVE_APP') return raw;
+  if (raw === 'DRAMA' || raw === 'VIDEO' || raw === 'SCIFI_PAINT' || raw === 'CREATIVE_APP')
+    return raw;
   return null;
 }
 
-function categoriesFromCompetitionConfig(config: any): Array<{ label: string; value: SubmissionCategory }> | null {
+function categoriesFromCompetitionConfig(
+  config: any,
+): Array<{ label: string; value: SubmissionCategory }> | null {
   if (Array.isArray(config?.categoryOptions)) {
     const out: Array<{ label: string; value: SubmissionCategory }> = [];
     for (const it of config.categoryOptions) {
@@ -33,7 +36,9 @@ function categoriesFromCompetitionConfig(config: any): Array<{ label: string; va
   }
 
   if (Array.isArray(config?.allowedCategories)) {
-    const allowed = config.allowedCategories.map((v: any) => normalizeSubmissionCategory(v)).filter(Boolean) as SubmissionCategory[];
+    const allowed = config.allowedCategories
+      .map((v: any) => normalizeSubmissionCategory(v))
+      .filter(Boolean) as SubmissionCategory[];
     const set = new Set(allowed);
     const out = defaultCategories.filter((o) => set.has(o.value));
     if (out.length) return out;
@@ -53,7 +58,10 @@ function labelCompetitionPhase(phase: string) {
 
 const PublicPage: React.FC = () => {
   const [competition, setCompetition] = useState<Competition | null>(null);
-  const categories = useMemo(() => categoriesFromCompetitionConfig(competition?.config) ?? defaultCategories, [competition?.config]);
+  const categories = useMemo(
+    () => categoriesFromCompetitionConfig(competition?.config) ?? defaultCategories,
+    [competition?.config],
+  );
   const [categoryIndex, setCategoryIndex] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,8 +71,14 @@ const PublicPage: React.FC = () => {
     const idx = Math.max(0, Math.min(categoryIndex, categories.length - 1));
     return Number.isFinite(idx) ? idx : 0;
   }, [categoryIndex, categories.length]);
-  const category = useMemo(() => categories[safeCategoryIndex]?.value ?? 'VIDEO', [categories, safeCategoryIndex]);
-  const categoryLabel = useMemo(() => categories[safeCategoryIndex]?.label ?? '科普视频', [categories, safeCategoryIndex]);
+  const category = useMemo(
+    () => categories[safeCategoryIndex]?.value ?? 'VIDEO',
+    [categories, safeCategoryIndex],
+  );
+  const categoryLabel = useMemo(
+    () => categories[safeCategoryIndex]?.label ?? '科普视频',
+    [categories, safeCategoryIndex],
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -120,7 +134,9 @@ const PublicPage: React.FC = () => {
       <View className={styles.card}>
         <Text className={styles.title}>公示榜单</Text>
         <Text className={styles.sub}>
-          {data ? `当前赛事：${data.competition.title}（${labelCompetitionPhase(data.competition.phase)}）` : '加载赛事信息中...'}
+          {data
+            ? `当前赛事：${data.competition.title}（${labelCompetitionPhase(data.competition.phase)}）`
+            : '加载赛事信息中...'}
         </Text>
 
         <View className={styles.field}>
@@ -146,7 +162,8 @@ const PublicPage: React.FC = () => {
                 <View className={styles.left}>
                   <Text className={styles.name}>{it.title || it.blindCode}</Text>
                   <Text className={styles.meta}>
-                    盲评码：{it.blindCode} · 平均分：{it.score.avgTotal} · 提交数：{it.score.scoreCount}
+                    盲评码：{it.blindCode} · 平均分：{it.score.avgTotal} · 提交数：
+                    {it.score.scoreCount}
                   </Text>
                 </View>
                 <Text className={styles.rank}>#{it.rank}</Text>

@@ -47,7 +47,8 @@ export async function http<T>(
     return res.data;
   }
 
-  const rid = (res as any)?.header?.['x-request-id'] ?? (res as any)?.header?.['X-Request-Id'] ?? requestId;
+  const rid =
+    (res as any)?.header?.['x-request-id'] ?? (res as any)?.header?.['X-Request-Id'] ?? requestId;
   throw new Error(
     `${typeof res.data === 'string' ? res.data : `HTTP ${res.statusCode}`} (requestId=${rid})`,
   );

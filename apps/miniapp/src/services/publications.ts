@@ -27,7 +27,12 @@ export type PublicLeaderboardResponse = {
   items: PublicLeaderboardItem[];
 };
 
-export function getPublicLeaderboard(args: { competitionId?: string; category?: string; page?: number; pageSize?: number }) {
+export function getPublicLeaderboard(args: {
+  competitionId?: string;
+  category?: string;
+  page?: number;
+  pageSize?: number;
+}) {
   const sp = new URLSearchParams();
   if (args.competitionId) sp.set('competitionId', args.competitionId);
   if (args.category) sp.set('category', args.category);
@@ -36,4 +41,3 @@ export function getPublicLeaderboard(args: { competitionId?: string; category?: 
   const qs = sp.toString();
   return http<PublicLeaderboardResponse>(`/public/leaderboard${qs ? `?${qs}` : ''}`);
 }
-

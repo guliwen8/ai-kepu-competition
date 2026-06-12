@@ -3,7 +3,10 @@ import { PrismaClient } from '@prisma/client';
 import { MetricsService } from '../ops/metrics.service';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+export class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnModuleDestroy
+{
   constructor(metrics: MetricsService) {
     super();
     const extended = this.$extends({
@@ -13,11 +16,21 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
           try {
             const result = await query(args);
             const durationMs = Date.now() - startedAt;
-            metrics.observeDb({ model: model ?? 'raw', action: operation ?? 'unknown', durationMs, ok: true });
+            metrics.observeDb({
+              model: model ?? 'raw',
+              action: operation ?? 'unknown',
+              durationMs,
+              ok: true,
+            });
             return result;
           } catch (e) {
             const durationMs = Date.now() - startedAt;
-            metrics.observeDb({ model: model ?? 'raw', action: operation ?? 'unknown', durationMs, ok: false });
+            metrics.observeDb({
+              model: model ?? 'raw',
+              action: operation ?? 'unknown',
+              durationMs,
+              ok: false,
+            });
             throw e;
           }
         },

@@ -1,5 +1,11 @@
 import { SubmissionCategory } from '@prisma/client';
-import { IsEnum, IsOptional, IsString, Length, MaxLength } from 'class-validator';
+import {
+  IsEnum,
+  IsOptional,
+  IsString,
+  Length,
+  MaxLength,
+} from 'class-validator';
 
 export class CreateSubmissionDto {
   @IsEnum(SubmissionCategory)
@@ -33,4 +39,3 @@ export class CreateSubmissionDto {
   @IsString()
   teamId?: string;
 }
-

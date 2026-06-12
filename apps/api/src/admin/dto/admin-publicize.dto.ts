@@ -8,4 +8,3 @@ export class AdminPublicizeDto {
   @IsBoolean()
   enabled!: boolean;
 }
-
